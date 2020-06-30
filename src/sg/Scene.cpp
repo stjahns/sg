@@ -4,10 +4,6 @@
 
 void Scene::Update()
 {
-    while (Model *pModel = loader.GetLoadedModel())
-    {
-        AddModel(pModel);
-    }
 }
 
 void Scene::AddWidgets()
@@ -104,7 +100,7 @@ void Scene::AddWidgets()
 
         if (ImGui::Button("Add"))
         {
-            loader.Load(pathBuffer);
+            LoadModel(pathBuffer);
         }
 
         int modelId = 0;

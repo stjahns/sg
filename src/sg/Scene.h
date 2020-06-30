@@ -7,7 +7,6 @@
 #include "Model.h"
 #include "Camera.h"
 #include "ShaderProgram.h"
-#include "ModelLoader.h"
 
 class GLFWwindow;
 
@@ -37,23 +36,23 @@ class Scene
 
             //SponzaTest();
             //NanoSuitTest();
-            CornellBoxTest();
+            //CornellBoxTest();
         }
 
         void SponzaTest()
         {
-            loader.Load("Models/gltf/sponza.gltf");
+            LoadModel("Models/gltf/sponza.gltf");
         }
 
         void NanoSuitTest()
         {
-            loader.Load("Models/nanosuit/nanosuit.obj");
+            LoadModel("Models/nanosuit/nanosuit.obj");
         }
 
         void CornellBoxTest()
         {
-            loader.Load("Models/cornell-box/cornellbox-glossy.obj");
-            //modelsToLoad.push_back(new Model("cornell-box/cornellbox-noobjs.obj"));
+            LoadModel("Models/cornell-box/cornellbox-glossy.obj");
+
             directionalLight.diffuse = vec3(0);
             directionalLight.specular = vec3(0);
             directionalLight.ambient = vec3(0);
@@ -78,8 +77,14 @@ class Scene
             // TODO - Bloom?
         }
 
-        void LoadModels();
         void Update();
+
+        void LoadModel(char* path)
+        {
+            Model* model = new Model(path);
+            model->Load();
+            AddModel(model);
+        }
 
         void AddModel(Model *pModel)
         {
@@ -121,6 +126,4 @@ class Scene
         ShaderProgram lightShader;
 
         Camera camera;
-
-        ModelLoader loader;
 };
