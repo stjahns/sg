@@ -1,6 +1,5 @@
 #pragma once
 
-#include <pthread.h>
 #include <vector>
 
 #include "Light.h"

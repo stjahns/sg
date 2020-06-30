@@ -535,9 +535,9 @@ void Renderer::RenderPointLightShadowMaps(Scene &scene)
     glCheckError();
 
     float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
-    float near = 0.0f;
-    float far = 25.0f;
-    glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near, far);
+    float nearPlane = 0.0f;
+    float farPlane = 25.0f;
+    glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
 
     PointLight *pointLights = scene.GetPointLights();
     SpotLight *spotLights = scene.GetSpotLights();
@@ -567,7 +567,7 @@ void Renderer::RenderPointLightShadowMaps(Scene &scene)
             pointLightShadowShader.Use();
 
             pointLightShadowShader.SetUniform("shadowMatrix", shadowTransforms[j]);
-            pointLightShadowShader.SetUniform("far_plane", far);
+            pointLightShadowShader.SetUniform("far_plane", farPlane);
             pointLightShadowShader.SetUniform("lightPos", pointLights[i].position);
 
             for (Model *model : scene.GetModels())
