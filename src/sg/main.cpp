@@ -31,6 +31,7 @@
 #include "Light.h"
 #include "Scene.h"
 #include "Renderer.h"
+#include "LineRenderer.h"
 
 using namespace glm;
 
@@ -113,6 +114,8 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	glEnable(GL_MULTISAMPLE);
 
+	LineRenderer lineRenderer;
+
     // Rendering Loop
     while (glfwWindowShouldClose(mWindow) == false) {
 
@@ -175,12 +178,17 @@ int main(int /*argc*/, char** /*argv*/) {
 		renderer.RenderPointLightShadowMaps(scene);
 
 		//renderer.ForwardRender(scene, activeShader);
-		renderer.DeferredRender(scene);
+		//renderer.DeferredRender(scene);
 
 		if (bWireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		scene.DrawLights();
+
+        lineRenderer.AddLine(vec3(0), vec3(1, 0, 0), vec4(1, 0, 0, 1), vec4(1, 0, 0, 0));
+        lineRenderer.AddLine(vec3(0), vec3(0, 1, 0), vec4(0, 1, 0, 1), vec4(0, 1, 0, 0));
+        lineRenderer.AddLine(vec3(0), vec3(0, 0, 1), vec4(0, 0, 1, 1), vec4(0, 0, 1, 0));
+		lineRenderer.Render(view, projection);
 
         ImGui::Render();
 
