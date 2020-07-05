@@ -8,36 +8,15 @@
 #include "Camera.h"
 #include "ShaderProgram.h"
 
+#include "anim/Skeleton.h"
+
 class GLFWwindow;
+class LineRenderer;
 
 class Scene
 {
     public:
-        Scene() 
-            : lightModel("models/glTF/box/box.gltf")
-            , numPointLights(0)
-            , numSpotLights(0)
-            , lightShader("shaders/mvp.vs.glsl", "shaders/white.fs.glsl")
-        {
-            lightModel.Load();
-
-            /*
-            Model* box  = new Model("glTF/box/box.gltf");
-
-            glm::mat4 t = glm::mat4(1);
-            t = glm::translate(t, vec3(0, -6.5, 0));
-            t = glm::scale(t, vec3(10));
-            box->SetTransform(t);
-
-            modelsToLoad.push_back(box);
-            modelsToLoad.push_back(new Model("nanosuit/nanosuit.obj"));
-            */
-            //modelsToLoad.push_back(new Model("gltf/sponza.gltf"));
-
-            //SponzaTest();
-            //NanoSuitTest();
-            //CornellBoxTest();
-        }
+        Scene();
 
         void SponzaTest()
         {
@@ -77,7 +56,7 @@ class Scene
             // TODO - Bloom?
         }
 
-        void Update();
+        void Update(LineRenderer& lineRenderer);
 
         void LoadModel(char* path)
         {
@@ -94,6 +73,7 @@ class Scene
         void AddWidgets();
 
         void DrawLights();
+        void DebugDraw();
 
         Camera& GetCamera() { return camera; }
 
@@ -126,4 +106,6 @@ class Scene
         ShaderProgram lightShader;
 
         Camera camera;
+
+        Skeleton skeleton;
 };

@@ -2,8 +2,29 @@
 
 #include "Scene.h"
 
-void Scene::Update()
+#include "LineRenderer.h"
+#include "Asset.h"
+#include "anim/AssimpSkeletonLoader.h"
+
+Scene::Scene() : lightModel("models/glTF/box/box.gltf")
+, numPointLights(0)
+, numSpotLights(0)
+, lightShader("shaders/mvp.vs.glsl", "shaders/white.fs.glsl")
 {
+    lightModel.Load();
+
+    Assimp::Importer importer;
+    //const aiScene* scene = importer.ReadFile(GetAssetPath("Models/RiggedSimple/gLTF/RiggedSimple.gltf"), 0);
+    const aiScene* scene = importer.ReadFile(GetAssetPath("Models/Fox/gLTF/Fox.gltf"), 0);
+    if (scene)
+    {
+        LoadSkeleton(*scene, skeleton);
+    }
+}
+
+void Scene::Update(LineRenderer& lineRenderer)
+{
+    lineRenderer.AddPose(skeleton, skeleton.bindPose, vec4(1));
 }
 
 void Scene::AddWidgets()

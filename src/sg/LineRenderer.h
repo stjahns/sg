@@ -8,13 +8,20 @@
 
 using namespace glm;
 
+class Skeleton;
+class Pose;
+
 class LineRenderer
 {
 public:
 
     LineRenderer();
+
     void AddLine(vec3 start, vec3 end, vec4 startColor, vec4 endColor);
     void AddLine(vec3 start, vec3 end, vec4 color);
+
+    void AddPose(const Skeleton& skeleton, const Pose& pose, vec4 color);
+
     void Render(const mat4& view, const mat4& projection);
 
 private:

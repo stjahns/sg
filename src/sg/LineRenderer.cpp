@@ -1,5 +1,6 @@
 #include "defines.h"
 #include "LineRenderer.h"
+#include "anim/Skeleton.h"
 
 LineRenderer::LineRenderer() : lineShader("shaders/line.vs.glsl", "shaders/line.fs.glsl")
 {
@@ -28,6 +29,23 @@ void LineRenderer::AddLine(vec3 start, vec3 end, vec4 color)
 {
     vertices.emplace_back(start, color);
     vertices.emplace_back(end, color);
+}
+
+void LineRenderer::AddPose(const Skeleton& skeleton, const Pose& pose, vec4 color)
+{
+    for (int boneIndex = 0; boneIndex < skeleton.bones.size(); ++boneIndex)
+    {
+        const Bone& bone = skeleton.bones[boneIndex];
+        if (bone.parent.IsValid())
+        {
+            const Bone& parent = skeleton.bones[bone.parent];
+
+            const vec3 start = pose.objectTransforms[bone.parent] * vec4(0, 0, 0, 1);
+            const vec3 end = pose.objectTransforms[boneIndex] * vec4(0, 0, 0, 1);
+
+            AddLine(start, end, color);
+        }
+    }
 }
 
 void LineRenderer::Render(const mat4& view, const mat4& projection)

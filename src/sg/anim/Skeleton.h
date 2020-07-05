@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+using namespace glm;
+
 class BoneIndex
 {
 public:
@@ -12,9 +14,9 @@ public:
     {
     }
 
-    bool IsValid() { return index == Invalid.index; }
+    bool IsValid() const { return index != Invalid.index; }
 
-    explicit operator int() const { return index; }
+    operator int() const { return index; }
 
     bool operator== (const BoneIndex& other) const { return index == other.index; }
 
@@ -33,15 +35,35 @@ public:
     {
     }
 
+    Bone(std::string id, BoneIndex parent) : parent(parent), id(id)
+    {
+    }
+
     std::string id;
     BoneIndex parent;
     glm::mat4x4 inverseBindPose;
 };
 
+class Skeleton;
+
 class Pose
 {
 public:
-    std::vector<glm::mat4x4> localTransforms;
+
+    void ComputeObjectFromLocal(const Skeleton& skeleton);
+
+    // TODO -- clean up this interface...
+
+    const mat4x4& GetLocalTransform(BoneIndex index) const { return localTransforms[index]; }
+    mat4x4& GetLocalTransform(BoneIndex index) { return localTransforms[index]; }
+
+    const mat4x4& GetObjectTransform(BoneIndex index) const { return objectTransforms[index]; }
+    mat4x4& GetObjectTransform(BoneIndex index) { return objectTransforms[index]; }
+
+    std::vector<mat4x4> localTransforms;
+
+    std::vector<mat4x4> objectTransforms;
+
 };
 
 class Skeleton

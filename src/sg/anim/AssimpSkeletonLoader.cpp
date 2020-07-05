@@ -67,5 +67,7 @@ bool LoadSkeleton(const aiScene& scene, Skeleton& skeleton)
 		skeleton.bones.push_back(bone);
 	}
 
+	skeleton.bindPose.ComputeObjectFromLocal(skeleton);
+
 	return true;
 }
