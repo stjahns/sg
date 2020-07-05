@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 project(sg)
 
 option(GLFW_BUILD_DOCS OFF)
@@ -23,7 +23,7 @@ endif()
 include_directories(src/vendor/
                     src/vendor/glad/include/
                     src/vendor/glfw/include/
-                    src/vendor/assimp/include/
+                    src/vendor/assimp
                     src/vendor/glm/
                     src/vendor/imgui/)
 
@@ -34,6 +34,7 @@ file(GLOB VENDORS_SOURCES src/vendor/glad/src/glad.c
 file(GLOB PROJECT_HEADERS src/sg/*.hpp)
 
 file(GLOB PROJECT_SOURCES src/sg/*.cpp)
+
 
 file(GLOB PROJECT_SHADERS build/shaders/*.comp
                           build/shaders/*.frag
@@ -53,10 +54,18 @@ source_group("Vendors" FILES ${VENDORS_SOURCES})
 
 add_definitions(-DGLFW_INCLUDE_NONE
                 -DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
+
+file(GLOB ANIM_SOURCES src/sg/anim/*.cpp)
+add_library(sg_anim STATIC ${ANIM_SOURCES})
+target_link_libraries(sg_anim assimp)
+target_include_directories(sg_anim PUBLIC src/vender/assimp)
+
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS}
                                ${PROJECT_SHADERS} ${PROJECT_CONFIGS}
                                ${VENDORS_SOURCES})
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES} assimp)
+
+
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES} assimp sg_anim)
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME})
 
@@ -66,3 +75,5 @@ add_custom_target(run
     DEPENDS sg
     WORKING_DIRECTORY sg
 )
+
+add_subdirectory(test)
