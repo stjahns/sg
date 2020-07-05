@@ -1,16 +1,19 @@
 #include "ShaderProgram.h"
+#include "Asset.h"
 
 ShaderSource::ShaderSource(const char* filename) : m_Source(nullptr)
 {
+	std::string path = GetAssetPath(filename);
+
 #ifdef WIN32
 	FILE* infile;
-	fopen_s(&infile, filename, "rb");
+	fopen_s(&infile, path.c_str(), "rb");
 #else
-	FILE* infile = fopen(filename, "rb");
+	FILE* infile = fopen(path.c_str(), "rb");
 #endif // WIN32
 
 	if (!infile) {
-		std::cerr << "Unable to open file '" << filename << "'" << std::endl;
+		std::cerr << "Unable to open file '" << path.c_str() << "'" << std::endl;
 		return;
 	}
 

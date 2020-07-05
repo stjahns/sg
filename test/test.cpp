@@ -16,6 +16,20 @@
 // TODO -- draw skeleton (default pose)
 // TODO -- pose skeleton
 
+std::string GetAssetPath(const char* path)
+{
+	std::string assetPath;
+
+	if (const char* rootDir = getenv("SG_ASSET_DIRECTORY"))
+	{
+		assetPath.append(rootDir);
+	}
+
+    assetPath.append(path);
+
+	return assetPath;
+}
+
 using namespace glm;
 
 #define EXPECT_MAT4_EQ(val1, val2) \
@@ -119,7 +133,7 @@ TEST(Skeleton, FindBoneIndex_NotFound)
 TEST(LoadSkeleton_Simple, ReturnsTrueOnSuccess)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("../../../../Build/Models/RiggedSimple/gLTF/RiggedSimple.gltf", 0);
+	const aiScene* scene = importer.ReadFile(GetAssetPath("Models/RiggedSimple/gLTF/RiggedSimple.gltf"), 0);
 
 	ASSERT_NE(scene, nullptr);
 
@@ -133,7 +147,7 @@ TEST(LoadSkeleton_Simple, ReturnsTrueOnSuccess)
 TEST(LoadSkeleton_Simple, AddsBones)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("../../../../Build/Models/RiggedSimple/gLTF/RiggedSimple.gltf", 0);
+	const aiScene* scene = importer.ReadFile(GetAssetPath("Models/RiggedSimple/gLTF/RiggedSimple.gltf"), 0);
 	ASSERT_NE(scene, nullptr);
 
 	Skeleton skeleton;
@@ -146,7 +160,7 @@ TEST(LoadSkeleton_Simple, AddsBones)
 TEST(LoadSkeleton_Simple, SetsBoneParentIndices)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("../../../../Build/Models/RiggedSimple/gLTF/RiggedSimple.gltf", 0);
+	const aiScene* scene = importer.ReadFile(GetAssetPath("Models/RiggedSimple/gLTF/RiggedSimple.gltf"), 0);
 	ASSERT_NE(scene, nullptr);
 
 	Skeleton skeleton;
@@ -161,7 +175,7 @@ TEST(LoadSkeleton_Simple, SetsBoneParentIndices)
 TEST(LoadSkeleton_Simple, SetsBoneIds)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile("../../../../Build/Models/RiggedSimple/gLTF/RiggedSimple.gltf", 0);
+	const aiScene* scene = importer.ReadFile(GetAssetPath("Models/RiggedSimple/gLTF/RiggedSimple.gltf"), 0);
 	ASSERT_NE(scene, nullptr);
 
 	Skeleton skeleton;
@@ -207,7 +221,6 @@ void BuildTwoBoneTestScene(aiScene& scene)
 
 TEST(LoadSkeleton_Simple, SetsInverseBindPoses)
 {
-
 	aiScene scene;
 	BuildTwoBoneTestScene(scene);
 

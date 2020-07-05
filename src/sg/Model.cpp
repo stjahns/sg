@@ -6,8 +6,9 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include "Model.h"
+#include "Asset.h"
 
-#include "assimp/postprocess.h"
+#include <assimp/postprocess.h>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -16,6 +17,7 @@ Model::Model(const char* filename)
 	, m_bound(false)
 {
 	m_filename = filename;
+	m_filename = GetAssetPath(filename);
 }
 
 void Model::LoadMesh(const aiMesh* pMesh, float fScale)
