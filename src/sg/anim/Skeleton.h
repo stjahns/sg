@@ -72,7 +72,7 @@ class Skeleton
 
         std::vector<Bone> bones;
 
-        BoneIndex FindBoneIndex(std::string id);
+        BoneIndex FindBoneIndex(std::string id) const;
 
         Pose bindPose;
 

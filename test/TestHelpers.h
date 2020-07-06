@@ -5,6 +5,18 @@
 
 std::string GetAssetPath(const char* path);
 
+#define EXPECT_QUAT_NEAR(val1, val2, error) \
+  EXPECT_NEAR(val1[0], val2[0], error); \
+  EXPECT_NEAR(val1[1], val2[1], error); \
+  EXPECT_NEAR(val1[2], val2[2], error); \
+  EXPECT_NEAR(val1[3], val2[3], error);
+
+#define EXPECT_QUAT_EQ(val1, val2) \
+  EXPECT_FLOAT_EQ(val1[0], val2[0]); \
+  EXPECT_FLOAT_EQ(val1[1], val2[1]); \
+  EXPECT_FLOAT_EQ(val1[2], val2[2]); \
+  EXPECT_FLOAT_EQ(val1[3], val2[3]);
+
 #define EXPECT_VEC3_NEAR(val1, val2, error) \
   EXPECT_NEAR(val1[0], val2[0], error); \
   EXPECT_NEAR(val1[1], val2[1], error); \

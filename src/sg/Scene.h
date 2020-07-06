@@ -9,6 +9,7 @@
 #include "ShaderProgram.h"
 
 #include "anim/Skeleton.h"
+#include "anim/AnimationClip.h"
 
 class GLFWwindow;
 class LineRenderer;
@@ -108,4 +109,6 @@ class Scene
         Camera camera;
 
         Skeleton skeleton;
+        AnimationClip clip;
+        float tick;
 };

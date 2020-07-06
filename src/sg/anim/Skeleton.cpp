@@ -4,7 +4,7 @@
 
 const BoneIndex BoneIndex::Invalid = BoneIndex(-1);
 
-BoneIndex Skeleton::FindBoneIndex(std::string id)
+BoneIndex Skeleton::FindBoneIndex(std::string id) const
 {
     for (int i = 0; i < bones.size(); ++i)
     {

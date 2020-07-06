@@ -5,6 +5,7 @@
 #include "LineRenderer.h"
 #include "Asset.h"
 #include "anim/AssimpSkeletonLoader.h"
+#include "anim/AssimpClipLoader.h"
 
 Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 , numPointLights(0)
@@ -19,11 +20,20 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
     if (scene)
     {
         LoadSkeleton(*scene, skeleton);
+        LoadClip(*scene, skeleton, clip);
+        tick = 0.0f;
     }
 }
 
 void Scene::Update(LineRenderer& lineRenderer)
 {
+    clip.EvaulatePose(skeleton, tick, skeleton.bindPose);
+
+    tick += 10.0f;
+    tick = fmodf(tick, clip.duration);
+
+    skeleton.bindPose.ComputeObjectFromLocal(skeleton);
+
     lineRenderer.AddPose(skeleton, skeleton.bindPose, vec4(1));
 }
 
