@@ -19,6 +19,7 @@ public:
 
     void AddLine(vec3 start, vec3 end, vec4 startColor, vec4 endColor);
     void AddLine(vec3 start, vec3 end, vec4 color);
+    void AddAxis(const mat4& transform);
 
     void AddPose(const Skeleton& skeleton, const Pose& pose, vec4 color);
 

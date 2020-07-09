@@ -2,4 +2,4 @@
 
 #include <string>
 
-std::string GetAssetPath(const char* path);
+std::string GetAssetPath(std::string path);

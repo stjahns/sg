@@ -7,6 +7,8 @@
 #include "anim/AssimpSkeletonLoader.h"
 #include "anim/AssimpClipLoader.h"
 
+#include <tiny_gltf.h>
+
 Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 , numPointLights(0)
 , numSpotLights(0)
@@ -14,18 +16,34 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 {
     lightModel.Load();
 
+    // TODO -- can we figure out how to load skeletons with assimp?
+
     Assimp::Importer importer;
-    //const aiScene* scene = importer.ReadFile(GetAssetPath("Models/RiggedSimple/gLTF/RiggedSimple.gltf"), 0);
-    const aiScene* scene = importer.ReadFile(GetAssetPath("Models/Fox/gLTF/Fox.gltf"), 0);
+
+    const std::string filename = "Models/Fox/gLTF/Fox.gltf";
+    const std::string assetPath = GetAssetPath(filename);
+
+    tinygltf::TinyGLTF loader;
+    tinygltf::Model model;
+    std::string err;
+    std::string warn;
+
+    if (loader.LoadASCIIFromFile(&model, &err, &warn, assetPath))
+    {
+        skeleton.Load(model);
+    }
+
+    const aiScene* scene = importer.ReadFile(assetPath, 0);
     if (scene)
     {
-        LoadSkeleton(*scene, skeleton);
         LoadClip(*scene, skeleton, clip);
         tick = 0.0f;
     }
+
+    LoadModel(filename.c_str());
 }
 
-void Scene::Update(LineRenderer& lineRenderer)
+void Scene::Update(LineRenderer& lineRenderer, ShaderProgram& shader)
 {
     clip.EvaulatePose(skeleton, tick, skeleton.bindPose);
 
@@ -33,6 +51,18 @@ void Scene::Update(LineRenderer& lineRenderer)
     tick = fmodf(tick, clip.duration);
 
     skeleton.bindPose.ComputeObjectFromLocal(skeleton);
+
+    shader.Use();
+
+    for (int i = 0; i < skeleton.bones.size(); ++i)
+    {
+        // TODO -- might also need inverse root transform?
+        mat4 skinMatrix = skeleton.bindPose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
+
+        std::ostringstream id;
+        id << "skinMatrix[" << i << "]";
+        shader.SetUniform((id.str()).c_str(), skinMatrix);
+    }
 
     lineRenderer.AddPose(skeleton, skeleton.bindPose, vec4(1));
 }

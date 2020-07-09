@@ -1,6 +1,6 @@
 #include "Asset.h"
 
-std::string GetAssetPath(const char* path)
+std::string GetAssetPath(std::string path)
 {
 	std::string assetPath;
 

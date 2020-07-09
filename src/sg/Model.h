@@ -11,6 +11,11 @@
 
 struct aiMesh;
 
+namespace tinygltf
+{
+	class Model;
+}
+
 struct Texture
 {
 	GLuint id;
@@ -41,6 +46,8 @@ struct Vertex
 	glm::vec3 tangent;
 	glm::vec3 bitangent; // TODO -- compare performance of precomputing vs. computing in vertex shader?
 	glm::vec2 texcoord;
+	glm::ivec4 skinIndex;
+	glm::vec4 skinWeight;
 };
 
 struct Mesh
@@ -68,6 +75,8 @@ public:
 
 	int LoadTexture(aiMaterial* pMaterial, aiTextureType type);
 	void LoadMesh(const aiMesh *pMesh, float fScale);
+
+	void LoadSkin(const tinygltf::Model& gltfSource);
 
 	void Bind();
 	void BindMesh(Mesh& mesh);

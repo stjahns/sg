@@ -31,6 +31,18 @@ void LineRenderer::AddLine(vec3 start, vec3 end, vec4 color)
     vertices.emplace_back(end, color);
 }
 
+void LineRenderer::AddAxis(const mat4& transform)
+{
+    vec3 position = transform * vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    vec3 x = transform * vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    vec3 y = transform * vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    vec3 z = transform * vec4(0.0f, 0.0f, 1.0f, 1.0f);
+
+    AddLine(position, x, vec4(1, 0, 0, 1));
+    AddLine(position, y, vec4(0, 1, 0, 1));
+    AddLine(position, z, vec4(0, 0, 1, 1));
+}
+
 void LineRenderer::AddPose(const Skeleton& skeleton, const Pose& pose, vec4 color)
 {
     for (int boneIndex = 0; boneIndex < skeleton.bones.size(); ++boneIndex)
@@ -44,6 +56,7 @@ void LineRenderer::AddPose(const Skeleton& skeleton, const Pose& pose, vec4 colo
             const vec3 end = pose.objectTransforms[boneIndex] * vec4(0, 0, 0, 1);
 
             AddLine(start, end, color);
+            AddAxis(pose.objectTransforms[boneIndex]);
         }
     }
 }

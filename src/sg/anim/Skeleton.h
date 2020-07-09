@@ -10,6 +10,10 @@ class BoneIndex
 {
 public:
 
+    BoneIndex() : index(Invalid.index)
+    {
+    }
+
     BoneIndex(int index) : index(index)
     {
     }
@@ -66,6 +70,11 @@ public:
 
 };
 
+namespace tinygltf
+{
+    class Model;
+}
+
 class Skeleton
 {
     public:
@@ -73,6 +82,8 @@ class Skeleton
         std::vector<Bone> bones;
 
         BoneIndex FindBoneIndex(std::string id) const;
+
+        bool Load(const tinygltf::Model& gltfSource);
 
         Pose bindPose;
 

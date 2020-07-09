@@ -57,9 +57,9 @@ class Scene
             // TODO - Bloom?
         }
 
-        void Update(LineRenderer& lineRenderer);
+        void Update(LineRenderer& lineRenderer, ShaderProgram& shader);
 
-        void LoadModel(char* path)
+        void LoadModel(const char* path)
         {
             Model* model = new Model(path);
             model->Load();

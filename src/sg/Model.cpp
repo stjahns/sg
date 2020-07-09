@@ -1,14 +1,17 @@
 #include <glad/glad.h>
 
 // Standard Headers
+#include <map>
 #include <iostream>
 #include "stb_image.h"
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "Model.h"
 #include "Asset.h"
 
 #include <assimp/postprocess.h>
+#include <tiny_gltf.h>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -18,6 +21,74 @@ Model::Model(const char* filename)
 {
 	m_filename = filename;
 	m_filename = GetAssetPath(filename);
+}
+
+template <typename T>
+void CopyBuffer(const tinygltf::Model& gltfSource, int accessorIndex, std::vector<T>& output)
+{
+    const tinygltf::Accessor& accessor = gltfSource.accessors[accessorIndex];
+    const tinygltf::BufferView& bufferView = gltfSource.bufferViews[accessor.bufferView];
+    const tinygltf::Buffer& buffer = gltfSource.buffers[bufferView.buffer];
+
+    output.resize(accessor.count);
+    memcpy(output.data(), &buffer.data[accessor.byteOffset + bufferView.byteOffset], accessor.count * sizeof(T));
+}
+
+void Model::LoadSkin(const tinygltf::Model& gltfSource)
+{
+	if (gltfSource.skins.empty())
+	{
+		return;
+	}
+
+	tinygltf::Skin skin = gltfSource.skins.front();
+
+	std::vector<Vertex>& vertices = m_meshes[0].vertices;
+
+	const int jointsAccessorIndex = gltfSource.meshes[0].primitives[0].attributes.at("JOINTS_0");
+	const int weightsAccessorIndex = gltfSource.meshes[0].primitives[0].attributes.at("WEIGHTS_0");
+
+    std::vector<glm::i16vec4> skinIndices;
+	CopyBuffer(gltfSource, jointsAccessorIndex, skinIndices);
+
+    std::vector<glm::vec4> skinWeights;
+	CopyBuffer(gltfSource, weightsAccessorIndex, skinWeights);
+
+	for (int vertexIndex = 0; vertexIndex < vertices.size(); ++vertexIndex)
+	{
+		Vertex& vertex = vertices[vertexIndex];
+		vertex.skinIndex = skinIndices[vertexIndex];
+        vertex.skinWeight = skinWeights[vertexIndex];
+	}
+}
+
+void LoadBoneWeights(const aiMesh* pMesh, std::vector<Vertex>& vertices)
+{
+    if (pMesh->HasBones())
+    {
+        for (int boneIndex = 0; boneIndex < pMesh->mNumBones; ++boneIndex)
+        {
+            const aiBone& bone = *pMesh->mBones[boneIndex];
+
+            for (int weightIndex = 0; weightIndex < bone.mNumWeights; ++weightIndex)
+            {
+				const aiVertexWeight& weight = bone.mWeights[weightIndex];
+				if (weight.mWeight > 0 && weight.mVertexId < vertices.size())
+				{
+					Vertex& vertex = vertices[weight.mVertexId];
+					for (int i = 0; i < 4; ++i)
+					{
+						if (vertex.skinWeight[i] == 0)
+						{
+							vertex.skinIndex[i] = boneIndex;
+							vertex.skinWeight[i] = weight.mWeight;
+							break;
+						}
+					}
+				}
+            }
+		}
+    }
 }
 
 void Model::LoadMesh(const aiMesh* pMesh, float fScale)
@@ -62,6 +133,8 @@ void Model::LoadMesh(const aiMesh* pMesh, float fScale)
 		mesh.vertices.push_back(v);
 	}
 
+	LoadBoneWeights(pMesh, mesh.vertices);
+
 	for (int i = 0; i < pMesh->mNumFaces; ++i)
 	{
 		const aiFace& face = pMesh->mFaces[i];
@@ -101,11 +174,15 @@ void Model::BindMesh(Mesh& mesh)
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
 	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
+	glEnableVertexAttribArray(6);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, position))); 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, normal))); 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, texcoord))); 
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, tangent))); 
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, bitangent))); 
+	glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, skinIndex))); 
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(offsetof(Vertex, skinWeight))); 
 }
 
 void Model::BindTexture(Texture& t)
@@ -166,7 +243,7 @@ void Model::Load()
 	}
 
 	Assimp::Importer importer;
-	const aiScene* pScene = importer.ReadFile(m_filename, aiProcess_CalcTangentSpace | aiProcess_Triangulate);
+	const aiScene* pScene = importer.ReadFile(m_filename, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_GenNormals);
 
 	if (!pScene)
 	{

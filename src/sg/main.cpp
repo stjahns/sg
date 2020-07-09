@@ -84,6 +84,7 @@ int main(int /*argc*/, char** /*argv*/) {
 	int selectedShaderIndex = 0;
 
 	const char *shaderProgramItems[] = {
+		"Unlit Skinned"
 		"Unlit",
 		"Lit, Untextured",
 		"Lit, Textured"
@@ -91,6 +92,7 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	ShaderProgram shaderPrograms[] = 
 	{
+		ShaderProgram("shaders/skinned.vs.glsl", "shaders/unlit.fs.glsl"),
 		ShaderProgram("shaders/mvp.vs.glsl", "shaders/unlit.fs.glsl"),
 		ShaderProgram("shaders/mvp.vs.glsl", "shaders/light0.fs.glsl"),
 		//ShaderProgram("shaders/mvp.vs.glsl", "shaders/default.fs.glsl"),
@@ -126,6 +128,14 @@ int main(int /*argc*/, char** /*argv*/) {
         if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(mWindow, true);
 
+		if (glfwGetKey(mWindow, GLFW_KEY_R) == GLFW_PRESS)
+		{
+			for (int i = 0; i < sizeof(shaderPrograms) / sizeof(shaderPrograms[0]); ++i)
+			{
+				shaderPrograms[i].Reload();
+			}
+		}
+
 		ImVec4 clear_color = ImColor(0.2f, 0.2f, 0.2f, 1.0f);
 
 		ImGui::Begin("Scene");
@@ -144,14 +154,15 @@ int main(int /*argc*/, char** /*argv*/) {
 
 		ImGui::Checkbox("Wireframe", &bWireframe);
 
-		scene.Update(lineRenderer);
+		ShaderProgram& activeShader = shaderPrograms[selectedShaderIndex];
+
+		scene.Update(lineRenderer, activeShader);
 
 		scene.AddWidgets();
 		renderer.Widgets();
 
 		ImGui::End();
 
-		ShaderProgram& activeShader = shaderPrograms[selectedShaderIndex];
 
         // Background Fill Color
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -178,7 +189,7 @@ int main(int /*argc*/, char** /*argv*/) {
 		renderer.RenderDirectionalLightShadowMap(scene);
 		renderer.RenderPointLightShadowMaps(scene);
 
-		//renderer.ForwardRender(scene, activeShader);
+		renderer.ForwardRender(scene, activeShader);
 		//renderer.DeferredRender(scene);
 
 		if (bWireframe)
