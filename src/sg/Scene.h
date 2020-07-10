@@ -10,6 +10,7 @@
 
 #include "anim/Skeleton.h"
 #include "anim/AnimationClip.h"
+#include "anim/AnimationNode.h"
 
 class GLFWwindow;
 class LineRenderer;
@@ -57,7 +58,7 @@ class Scene
             // TODO - Bloom?
         }
 
-        void Update(LineRenderer& lineRenderer, ShaderProgram& shader);
+        void Update(LineRenderer& lineRenderer, ShaderProgram& shader, float deltaTime);
 
         void LoadModel(const char* path)
         {
@@ -109,6 +110,9 @@ class Scene
         Camera camera;
 
         Skeleton skeleton;
-        AnimationClip clip;
+        AnimationClip clip1;
+        AnimationClip clip2;
         float tick;
+
+        float blend;
 };

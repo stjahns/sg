@@ -4,11 +4,13 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/matrix4x4.h"
 
+#include "Pose.h"
 #include "Skeleton.h"
 #include "AssimpSkeletonLoader.h"
 #include "TestHelpers.h"
@@ -88,3 +90,53 @@ TEST(PoseTests, ComputeObjectFromLocal_SingleChain2)
 
     EXPECT_VEC3_NEAR(endPosition, vec3(1, 2, 0), 0.00001f);
 }
+
+vec3 GetTranslation(mat4 m)
+{
+    return m[3];
+}
+
+TEST(PoseTests, AnimationPoseToSkeletonPose_NoValidTransforms_NoChange)
+{
+    Skeleton skeleton;
+    skeleton.bones.emplace_back("root");
+    skeleton.bones.emplace_back("bone1", 0);
+    skeleton.bones.emplace_back("bone2", 1);
+
+    AnimationPose animationPose;
+
+    Pose skeletonPose;
+    skeletonPose.localTransforms.resize(3);
+
+    skeleton.ApplyAnimationPose(animationPose, skeletonPose);
+
+    ASSERT_EQ(skeletonPose.localTransforms.size(), 3);
+    EXPECT_VEC3_EQ(GetTranslation(skeletonPose.localTransforms[0]), vec3(0.0f, 0.0f, 0.0f));
+    EXPECT_VEC3_EQ(GetTranslation(skeletonPose.localTransforms[0]), vec3(0.0f, 0.0f, 0.0f));
+    EXPECT_VEC3_EQ(GetTranslation(skeletonPose.localTransforms[0]), vec3(0.0f, 0.0f, 0.0f));
+}
+
+TEST(PoseTests, AnimationPoseToSkeletonPose)
+{
+    Skeleton skeleton;
+    skeleton.bones.emplace_back("root");
+    skeleton.bones.emplace_back("bone1", 0);
+    skeleton.bones.emplace_back("bone2", 1);
+
+    AnimationPose animationPose;
+    animationPose.SetTranslation(0, vec3(1.0f));
+    animationPose.SetTranslation(1, vec3(2.0f));
+    animationPose.SetTranslation(2, vec3(3.0f));
+
+    Pose skeletonPose;
+    skeletonPose.localTransforms.resize(3);
+
+    skeleton.ApplyAnimationPose(animationPose, skeletonPose);
+
+    ASSERT_EQ(skeletonPose.localTransforms.size(), 3);
+    EXPECT_VEC3_EQ(GetTranslation(skeletonPose.localTransforms[0]), vec3(1.0f, 1.0f, 1.0f));
+    EXPECT_VEC3_EQ(GetTranslation(skeletonPose.localTransforms[1]), vec3(2.0f, 2.0f, 2.0f));
+    EXPECT_VEC3_EQ(GetTranslation(skeletonPose.localTransforms[2]), vec3(3.0f, 3.0f, 3.0f));
+}
+
+// TODO -- can we have a valid rotation animation that doesn't affect the default skeleton translation?

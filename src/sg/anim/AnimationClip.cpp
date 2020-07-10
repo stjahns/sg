@@ -14,7 +14,7 @@ void AnimationClip::EvaulatePose(const Skeleton& skeleton, float time, Pose& pos
         pose.localTransforms[channel.target] = mat3_cast(value);
     }
 
-    for (const auto& channel : positionChannels)
+    for (const auto& channel : translationChannels)
     {
         vec3 value = channel.Evaulate(time);
         pose.localTransforms[channel.target][3][0] = value.x;

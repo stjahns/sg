@@ -4,12 +4,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Skeleton.h"
+#include "Pose.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
-
-const BoneIndex BoneIndex::Invalid = BoneIndex(-1);
 
 BoneIndex Skeleton::FindBoneIndex(std::string id) const
 {
@@ -129,20 +128,36 @@ bool Skeleton::Load(const tinygltf::Model& gltfSource)
 
         bones.push_back(bone);
     }
+
+    currentPose.localTransforms.resize(bindPose.localTransforms.size());
+    currentPose.objectTransforms.resize(bindPose.localTransforms.size());
+
+    for (int i = 0; i < bindPose.localTransforms.size(); ++i)
+    {
+        currentPose.localTransforms[i] = bindPose.localTransforms[i];
+    }
 }
 
-void Pose::ComputeObjectFromLocal(const Skeleton& skeleton)
+void Skeleton::ApplyAnimationPose(const AnimationPose& animPose, Pose& skeletonPose)
 {
-    objectTransforms.resize(localTransforms.size());
-
-    mat4 identity;
-
-    for (int boneIndex = 0; boneIndex < skeleton.bones.size(); ++boneIndex)
+    for (int i = 0; i < animPose.GetBoneCount(); ++i)
     {
-        BoneIndex parentIndex = skeleton.bones[boneIndex].parent;
-        const mat4& parentTransform = parentIndex.IsValid() ? objectTransforms[parentIndex] : identity;
-        const mat4& localTransform = localTransforms[boneIndex];
+        mat4 pose = skeletonPose.localTransforms[i];
 
-        objectTransforms[boneIndex] = parentTransform * localTransform;
+        quat rotation;
+        if (animPose.GetRotation(i, rotation))
+        {
+            vec4 originalTranslation = pose[3];
+            pose = mat4_cast(rotation);
+            pose[3] = originalTranslation;
+        }
+
+        vec3 translation;
+        if (animPose.GetTranslation(i, translation))
+        {
+            pose[3] = vec4(translation, 1.0f);
+        }
+
+        skeletonPose.localTransforms[i] = pose;
     }
 }

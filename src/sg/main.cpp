@@ -119,6 +119,8 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	LineRenderer lineRenderer;
 
+	double time = glfwGetTime();
+
     // Rendering Loop
     while (glfwWindowShouldClose(mWindow) == false) {
 
@@ -156,7 +158,11 @@ int main(int /*argc*/, char** /*argv*/) {
 
 		ShaderProgram& activeShader = shaderPrograms[selectedShaderIndex];
 
-		scene.Update(lineRenderer, activeShader);
+		double newTime = glfwGetTime();
+		double deltaTime = newTime - time;
+		time = newTime;
+
+		scene.Update(lineRenderer, activeShader, deltaTime * 1000.0f);
 
 		scene.AddWidgets();
 		renderer.Widgets();

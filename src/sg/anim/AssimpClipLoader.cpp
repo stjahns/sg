@@ -10,9 +10,9 @@
 
 using namespace glm;
 
-bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip)
+bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int clipIndex)
 {
-	const aiAnimation& animation = *scene.mAnimations[0]; // TODO -- handle multiple anims
+	const aiAnimation& animation = *scene.mAnimations[clipIndex];
 
 	clip.duration = animation.mDuration;
 
@@ -33,7 +33,7 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip)
 					channel.keys.emplace_back(key.mTime, value);
 				}
 
-				clip.positionChannels.push_back(channel);
+				clip.translationChannels.push_back(channel);
 			}
 
 			if (nodeAnim.mNumRotationKeys > 0)

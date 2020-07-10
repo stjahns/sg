@@ -161,8 +161,8 @@ TEST(LoadClip, LoadsPositionChannel)
 
 	bool result = LoadClip(*scene, skeleton, clip);
 
-	EXPECT_EQ(clip.positionChannels.size(), 1);
-	EXPECT_TRUE(clip.positionChannels[0].target.IsValid());
+	EXPECT_EQ(clip.translationChannels.size(), 1);
+	EXPECT_TRUE(clip.translationChannels[0].target.IsValid());
 }
 
 TEST(LoadClip, LoadsRotationChannel)
@@ -197,7 +197,7 @@ TEST(AnimationClip, EvaluateClip_WithPositionChannels)
 	TranslationChannel channel(boneIndex);
 	channel.keys.emplace_back(0.0f, vec3(0));
 	channel.keys.emplace_back(1.0f, vec3(1));
-	clip.positionChannels.push_back(channel);
+	clip.translationChannels.push_back(channel);
 
 	Pose pose;
 	pose.localTransforms.resize(3); // TODO -- something to copy/init a pose?
@@ -253,7 +253,7 @@ TEST(AnimationClip, EvaluateClip_WithTranslationAndRotation)
 	TranslationChannel translationChannel(boneIndex);
 	translationChannel.keys.emplace_back(0.0f, vec3(0));
 	translationChannel.keys.emplace_back(1.0f, vec3(0, 1, 0));
-	clip.positionChannels.push_back(translationChannel);
+	clip.translationChannels.push_back(translationChannel);
 
 	Pose pose;
 	pose.localTransforms.resize(3); // TODO -- something to copy/init a pose?

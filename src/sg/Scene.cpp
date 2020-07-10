@@ -13,6 +13,7 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 , numPointLights(0)
 , numSpotLights(0)
 , lightShader("shaders/mvp.vs.glsl", "shaders/white.fs.glsl")
+, blend(0.0f)
 {
     lightModel.Load();
 
@@ -36,39 +37,57 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
     const aiScene* scene = importer.ReadFile(assetPath, 0);
     if (scene)
     {
-        LoadClip(*scene, skeleton, clip);
+        LoadClip(*scene, skeleton, clip1, 0);
+        LoadClip(*scene, skeleton, clip2, 2);
         tick = 0.0f;
     }
 
     LoadModel(filename.c_str());
 }
 
-void Scene::Update(LineRenderer& lineRenderer, ShaderProgram& shader)
+// TODO - safer type for time (ms, s??)
+void Scene::Update(LineRenderer& lineRenderer, ShaderProgram& shader, float deltaTime)
 {
-    clip.EvaulatePose(skeleton, tick, skeleton.bindPose);
+    tick += deltaTime;
+    tick = fmodf(tick, clip1.duration);
 
-    tick += 10.0f;
-    tick = fmodf(tick, clip.duration);
+    ClipNode clipNode1(clip1);
+    clipNode1.Update(tick);
 
-    skeleton.bindPose.ComputeObjectFromLocal(skeleton);
+    //ClipNode clipNode2(clip2);
+    auto clipNode2 = std::make_unique<ClipNode>(clip2);
+    clipNode2->Update(tick);
+
+    BlendNode blendNode(clipNode1, *clipNode2);
+    blendNode.SetNode1Weight(blend);
+
+    AnimationPose pose;
+    blendNode.Evaluate(pose);
+
+    skeleton.ApplyAnimationPose(pose, skeleton.currentPose);
+    skeleton.currentPose.ComputeObjectFromLocal(skeleton);
 
     shader.Use();
 
     for (int i = 0; i < skeleton.bones.size(); ++i)
     {
-        // TODO -- might also need inverse root transform?
-        mat4 skinMatrix = skeleton.bindPose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
+        mat4 skinMatrix = skeleton.currentPose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
 
         std::ostringstream id;
         id << "skinMatrix[" << i << "]";
         shader.SetUniform((id.str()).c_str(), skinMatrix);
     }
 
-    lineRenderer.AddPose(skeleton, skeleton.bindPose, vec4(1));
+    lineRenderer.AddPose(skeleton, skeleton.currentPose, vec4(1));
 }
 
 void Scene::AddWidgets()
 {
+    if (ImGui::CollapsingHeader("Animation"))
+    {
+        ImGui::DragFloat("Blend", &blend, 0.01, 0.0f, 1.0f);
+    }
+
     camera.Widgets();
 
     ImGui::PushID("DirectionalLight");

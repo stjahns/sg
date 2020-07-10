@@ -4,32 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "BoneIndex.h"
+#include "Pose.h"
+
 using namespace glm;
-
-class BoneIndex
-{
-public:
-
-    BoneIndex() : index(Invalid.index)
-    {
-    }
-
-    BoneIndex(int index) : index(index)
-    {
-    }
-
-    bool IsValid() const { return index != Invalid.index; }
-
-    operator int() const { return index; }
-
-    bool operator== (const BoneIndex& other) const { return index == other.index; }
-
-    static const BoneIndex Invalid;
-
-private:
-
-    int index;
-};
 
 class Bone
 {
@@ -48,28 +26,6 @@ public:
     glm::mat4x4 inverseBindPose;
 };
 
-class Skeleton;
-
-class Pose
-{
-public:
-
-    void ComputeObjectFromLocal(const Skeleton& skeleton);
-
-    // TODO -- clean up this interface...
-
-    const mat4x4& GetLocalTransform(BoneIndex index) const { return localTransforms[index]; }
-    mat4x4& GetLocalTransform(BoneIndex index) { return localTransforms[index]; }
-
-    const mat4x4& GetObjectTransform(BoneIndex index) const { return objectTransforms[index]; }
-    mat4x4& GetObjectTransform(BoneIndex index) { return objectTransforms[index]; }
-
-    std::vector<mat4x4> localTransforms;
-
-    std::vector<mat4x4> objectTransforms;
-
-};
-
 namespace tinygltf
 {
     class Model;
@@ -85,6 +41,9 @@ class Skeleton
 
         bool Load(const tinygltf::Model& gltfSource);
 
+        void ApplyAnimationPose(const AnimationPose& animPose, Pose& skeletonPose);
+
+        Pose currentPose;
         Pose bindPose;
 
     private:

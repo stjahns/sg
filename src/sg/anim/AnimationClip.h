@@ -1,8 +1,11 @@
+#pragma once
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 #include <vector>
 #include "Skeleton.h"
+#include "Pose.h"
 
 using namespace glm;
 
@@ -68,7 +71,7 @@ class AnimationClip
 public:
     void EvaulatePose(const Skeleton& skeleton, float time, Pose& pose) const;
 
-    std::vector<TranslationChannel> positionChannels;
+    std::vector<TranslationChannel> translationChannels;
     std::vector<RotationChannel> rotationChannels;
 
     float duration;
