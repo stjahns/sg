@@ -7,7 +7,7 @@ void ClipNode::Evaluate(AnimationPose& pose)
     for (const auto& channel : clip.rotationChannels)
     {
         quat value = channel.Evaulate(time);
-        pose.SetRotation(channel.target, value);
+        pose.SetRotation(channel.GetTarget(), value);
     }
 
     // TODO -- assimp is adding translation channels that aren't actually in the GLTF
@@ -15,7 +15,7 @@ void ClipNode::Evaluate(AnimationPose& pose)
     for (const auto& channel : clip.translationChannels)
     {
         vec3 value = channel.Evaulate(time);
-        pose.SetTranslation(channel.target, value);
+        pose.SetTranslation(channel.GetTarget(), value);
     }
 }
 

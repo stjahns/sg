@@ -18,98 +18,6 @@
 
 using namespace glm;
 
-TEST(PositionChannelTests, NoKeys_DefaultValue)
-{
-	TranslationChannel channel;
-
-	vec3 v = channel.Evaulate(1.0f);
-
-	EXPECT_VEC3_EQ(v, vec3());
-}
-
-TEST(PositionChannelTests, OneKey)
-{
-	TranslationChannel channel;
-
-	vec3 expected(1.0f, 2.0f, 3.0f);
-
-	channel.keys.emplace_back(0.0f, expected);
-
-	vec3 v = channel.Evaulate(1.0f);
-
-	EXPECT_VEC3_EQ(v, expected);
-}
-
-TEST(PositionChannelTests, TwoKeys)
-{
-	TranslationChannel channel;
-
-	channel.keys.emplace_back(0.0f, vec3(0));
-	channel.keys.emplace_back(1.0f, vec3(1));
-
-	EXPECT_VEC3_EQ(channel.Evaulate(0.0f), vec3(0));
-	EXPECT_VEC3_EQ(channel.Evaulate(1.0f), vec3(1));
-}
-
-TEST(PositionChannelTests, TwoKeys_Interpolates)
-{
-	TranslationChannel channel;
-
-	channel.keys.emplace_back(0.0f, vec3(0));
-	channel.keys.emplace_back(1.0f, vec3(1));
-
-	EXPECT_VEC3_EQ(channel.Evaulate(0.5f), vec3(0.5));
-}
-
-TEST(RotationChannelTests, NoKeys_DefaultValue)
-{
-	TranslationChannel channel;
-
-	quat q = channel.Evaulate(1.0f);
-
-	EXPECT_QUAT_EQ(q, quat());
-}
-
-TEST(RotationChannelTests, OneKey)
-{
-	RotationChannel channel;
-
-	quat expected(vec3(0.5f, 0.5f, 0.5f));
-
-	channel.keys.emplace_back(0.0f, expected);
-
-	quat q = channel.Evaulate(1.0f);
-
-	EXPECT_QUAT_EQ(q, expected);
-}
-
-TEST(RotationChannelTests, TwoKeys)
-{
-	RotationChannel channel;
-
-	quat qStart = quat(vec3(0, 0, 0));
-	quat qEnd = quat(vec3(1, 0, 0));
-
-	channel.keys.emplace_back(0.0f, qStart);
-	channel.keys.emplace_back(1.0f, qEnd);
-
-	EXPECT_QUAT_EQ(channel.Evaulate(0.0f), qStart);
-	EXPECT_QUAT_EQ(channel.Evaulate(1.0f), qEnd);
-}
-
-TEST(RotationChannelTests, TwoKeys_Interpolates)
-{
-	RotationChannel channel;
-
-	quat qStart = quat(vec3(0, 0, 0));
-	quat qEnd = quat(vec3(1, 0, 0));
-
-	channel.keys.emplace_back(0.0f, qStart);
-	channel.keys.emplace_back(1.0f, qEnd);
-
-	EXPECT_QUAT_EQ(channel.Evaulate(0.5f), quat(vec3(0.5, 0, 0)));
-}
-
 // TODO - what about times outside key range?
 
 TEST(LoadClip, ReturnsTrue)
@@ -162,7 +70,7 @@ TEST(LoadClip, LoadsPositionChannel)
 	bool result = LoadClip(*scene, skeleton, clip);
 
 	EXPECT_EQ(clip.translationChannels.size(), 1);
-	EXPECT_TRUE(clip.translationChannels[0].target.IsValid());
+	EXPECT_TRUE(clip.translationChannels[0].GetTarget().IsValid());
 }
 
 TEST(LoadClip, LoadsRotationChannel)
@@ -181,7 +89,7 @@ TEST(LoadClip, LoadsRotationChannel)
 	bool result = LoadClip(*scene, skeleton, clip);
 
 	EXPECT_EQ(clip.rotationChannels.size(), 1);
-	EXPECT_TRUE(clip.rotationChannels[0].target.IsValid());
+	EXPECT_TRUE(clip.rotationChannels[0].GetTarget().IsValid());
 }
 
 TEST(AnimationClip, EvaluateClip_WithPositionChannels)
@@ -195,8 +103,8 @@ TEST(AnimationClip, EvaluateClip_WithPositionChannels)
 	AnimationClip clip;
 
 	TranslationChannel channel(boneIndex);
-	channel.keys.emplace_back(0.0f, vec3(0));
-	channel.keys.emplace_back(1.0f, vec3(1));
+	channel.AddKey(0.0f, vec3(0));
+	channel.AddKey(1.0f, vec3(1));
 	clip.translationChannels.push_back(channel);
 
 	Pose pose;
@@ -221,8 +129,8 @@ TEST(AnimationClip, EvaluateClip_WithRotationChannels)
 	AnimationClip clip;
 
 	RotationChannel channel(boneIndex);
-	channel.keys.emplace_back(0.0f, quat(vec3(0, 0, 0)));
-    channel.keys.emplace_back(1.0f, quat(vec3(half_pi<float>(), 0, 0)));
+	channel.AddKey(0.0f, quat(vec3(0, 0, 0)));
+    channel.AddKey(1.0f, quat(vec3(half_pi<float>(), 0, 0)));
 	clip.rotationChannels.push_back(channel);
 
 	Pose pose;
@@ -246,13 +154,13 @@ TEST(AnimationClip, EvaluateClip_WithTranslationAndRotation)
 	AnimationClip clip;
 
 	RotationChannel rotationChannel(boneIndex);
-	rotationChannel.keys.emplace_back(0.0f, quat(vec3(0, 0, 0)));
-    rotationChannel.keys.emplace_back(1.0f, quat(vec3(half_pi<float>(), 0, 0)));
+	rotationChannel.AddKey(0.0f, quat(vec3(0, 0, 0)));
+    rotationChannel.AddKey(1.0f, quat(vec3(half_pi<float>(), 0, 0)));
 	clip.rotationChannels.push_back(rotationChannel);
 
 	TranslationChannel translationChannel(boneIndex);
-	translationChannel.keys.emplace_back(0.0f, vec3(0));
-	translationChannel.keys.emplace_back(1.0f, vec3(0, 1, 0));
+	translationChannel.AddKey(0.0f, vec3(0));
+	translationChannel.AddKey(1.0f, vec3(0, 1, 0));
 	clip.translationChannels.push_back(translationChannel);
 
 	Pose pose;

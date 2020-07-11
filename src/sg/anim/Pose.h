@@ -47,22 +47,16 @@ struct Transform
 
 class AnimationPose
 {
-    std::vector<Transform> transforms;
-    std::vector<bool> valid;
-
-    void SetValid(BoneIndex index, bool value)
-    {
-        if (index >= valid.size())
-        {
-            valid.resize(index + 1, false);
-        }
-
-        valid[index] = value;
-    }
 
 public:
 
     int GetBoneCount() const { return transforms.size(); }
+
+    void Resize(int boneCount)
+    {
+        transforms.resize(boneCount);
+        valid.resize(boneCount, false);
+    }
 
     bool GetTranslation(BoneIndex index, vec3& out) const
     { 
@@ -106,5 +100,20 @@ public:
 
         transforms[index].rotation = value;
         SetValid(index, true);
+    }
+
+private:
+
+    std::vector<Transform> transforms;
+    std::vector<u8> valid;
+
+    void SetValid(BoneIndex index, bool value)
+    {
+        if (index >= valid.size())
+        {
+            valid.resize(index + 1, false);
+        }
+
+        valid[index] = value;
     }
 };

@@ -134,13 +134,13 @@ AnimationClip CreateClip()
     BoneIndex boneIndex(1);
 
     RotationChannel rotationChannel(boneIndex);
-    rotationChannel.keys.emplace_back(0.0f, quat(vec3(0, 0, 0)));
-    rotationChannel.keys.emplace_back(1.0f, quat(vec3(half_pi<float>(), 0, 0)));
+    rotationChannel.AddKey(0.0f, quat(vec3(0, 0, 0)));
+    rotationChannel.AddKey(1.0f, quat(vec3(half_pi<float>(), 0, 0)));
     clip.rotationChannels.push_back(rotationChannel);
 
     TranslationChannel translationChannel(boneIndex);
-    translationChannel.keys.emplace_back(0.0f, vec3(0));
-    translationChannel.keys.emplace_back(1.0f, vec3(0, 1, 0));
+    translationChannel.AddKey(0.0f, vec3(0));
+    translationChannel.AddKey(1.0f, vec3(0, 1, 0));
     clip.translationChannels.push_back(translationChannel);
 
     return clip;

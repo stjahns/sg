@@ -30,7 +30,7 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int
 				{
 					const aiVectorKey& key = nodeAnim.mPositionKeys[keyIndex];
 					const vec3 value(key.mValue.x, key.mValue.y, key.mValue.z);
-					channel.keys.emplace_back(key.mTime, value);
+					channel.AddKey(key.mTime, value);
 				}
 
 				clip.translationChannels.push_back(channel);
@@ -44,7 +44,7 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int
 				{
 					const aiQuatKey& key = nodeAnim.mRotationKeys[keyIndex];
 					const quat value(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z);
-					channel.keys.emplace_back(key.mTime, value);
+					channel.AddKey(key.mTime, value);
 				}
 
 				clip.rotationChannels.push_back(channel);
