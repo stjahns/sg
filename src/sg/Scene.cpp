@@ -13,7 +13,8 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 , numPointLights(0)
 , numSpotLights(0)
 , lightShader("shaders/mvp.vs.glsl", "shaders/white.fs.glsl")
-, blend(0.0f)
+, transitionTime(0.0f)
+, p1(0)
 {
     lightModel.Load();
 
@@ -39,7 +40,27 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
     {
         LoadClip(*scene, skeleton, clip1, 0);
         LoadClip(*scene, skeleton, clip2, 2);
-        tick = 0.0f;
+
+        clipNode1 = std::make_unique<ClipNode>(clip1);
+        clipNode2 = std::make_unique<ClipNode>(clip2);
+
+        State state1{ *clipNode1 }, state2{ *clipNode2 };
+
+        stateMachine = std::make_unique<StateMachineNode>();
+        stateMachine->AddState(state1);
+        stateMachine->AddState(state2);
+
+        {
+            Condition condition{ 1, 1 };
+            Transition transition{ 0, 1, 1000.0f, condition };
+            stateMachine->AddTransition(transition);
+        }
+
+        {
+            Condition condition{ 1, 0 };
+            Transition transition{ 1, 0, 1000.0f, condition };
+            stateMachine->AddTransition(transition);
+        }
     }
 
     LoadModel(filename.c_str());
@@ -48,23 +69,17 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 // TODO - safer type for time (ms, s??)
 void Scene::Update(LineRenderer& lineRenderer, ShaderProgram& shader, float deltaTime)
 {
-    tick += deltaTime;
-    tick = fmodf(tick, clip1.duration);
+    if (stateMachine)
+    {
+        Parameters parameters{ {1, p1 } };
+        stateMachine->Update(deltaTime, parameters);
 
-    ClipNode clipNode1(clip1);
-    clipNode1.Update(tick);
+        AnimationPose pose;
+        stateMachine->Evaluate(pose);
 
-    //ClipNode clipNode2(clip2);
-    auto clipNode2 = std::make_unique<ClipNode>(clip2);
-    clipNode2->Update(tick);
+        skeleton.ApplyAnimationPose(pose, skeleton.currentPose);
+    }
 
-    BlendNode blendNode(clipNode1, *clipNode2);
-    blendNode.SetNode1Weight(blend);
-
-    AnimationPose pose;
-    blendNode.Evaluate(pose);
-
-    skeleton.ApplyAnimationPose(pose, skeleton.currentPose);
     skeleton.currentPose.ComputeObjectFromLocal(skeleton);
 
     shader.Use();
@@ -85,7 +100,8 @@ void Scene::AddWidgets()
 {
     if (ImGui::CollapsingHeader("Animation"))
     {
-        ImGui::DragFloat("Blend", &blend, 0.01, 0.0f, 1.0f);
+        ImGui::DragInt("P1", &p1, 1.0f, 0, 1);
+        ImGui::DragFloat("Transition Time", &transitionTime, 0.01, 0.0f, 5.0f); // TODO -- allow controlling transition durations via param?
     }
 
     camera.Widgets();

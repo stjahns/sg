@@ -1,3 +1,4 @@
+#include <glm/gtc/quaternion.hpp>
 #include "AnimationNode.h"
 #include "BoneIndex.h"
 
@@ -48,7 +49,7 @@ namespace
 
         if (input1valid && input2valid)
         {
-            output.SetRotation(i, mix(rotation1, rotation2, blend));
+            output.SetRotation(i, slerp(rotation1, rotation2, blend));
         }
         else if (input1valid)
         {

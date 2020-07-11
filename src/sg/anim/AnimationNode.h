@@ -9,10 +9,18 @@
 
 using namespace glm;
 
+struct Parameter
+{
+    int id;
+    int value;
+};
+
+typedef std::vector<Parameter> Parameters;
+
 class AnimationNode
 {
 public:
-    virtual void Update(float deltaTime) = 0;
+    virtual void Update(float deltaTime, const Parameters& parameters) = 0;
     virtual void Evaluate(AnimationPose& pose) = 0;
 };
 
@@ -24,9 +32,9 @@ public:
     {
     }
 
-    virtual void Update(float deltaTime) override
+    virtual void Update(float deltaTime, const Parameters& parameters) override
     {
-        time += deltaTime;
+        time = fmodf(time + deltaTime, clip.duration);
     }
 
     virtual void Evaluate(AnimationPose& pose) override;
@@ -46,27 +54,23 @@ public:
     BlendNode(AnimationNode& node1, AnimationNode& node2)
         : node1(node1)
         , node2(node2)
-        , blend(1.0f)
+        , blend(0.0f)
     {
     }
 
-    virtual void Update(float deltaTime) override
+    virtual void Update(float deltaTime, const Parameters& parameters) override
     {
-        node1.Update(deltaTime);
-        node2.Update(deltaTime);
+        node1.Update(deltaTime, parameters);
+        node2.Update(deltaTime, parameters);
     }
 
     virtual void Evaluate(AnimationPose& pose) override;
 
-    void SetNode1Weight(float weight) { blend = weight; }
-    void SetNode2Weight(float weight) { blend = 1.0f - weight; }
+    void SetBlend(float blend) { this->blend = blend; }
 
 private:
 
     float blend;
     AnimationNode& node1;
     AnimationNode& node2;
-
 };
-
-class StateMachineNode : public AnimationNode { };

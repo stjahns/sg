@@ -44,7 +44,7 @@ TEST(ClipNode, AppliesPose_1s)
     AnimationClip clip = CreateClip();
     ClipNode node(clip);
 
-    node.Update(1.0f);
+    node.Update(1.0f, Parameters());
 
     AnimationPose pose;
     node.Evaluate(pose);
@@ -64,7 +64,7 @@ namespace
     {
         float deltaTime;
 
-        virtual void Update(float deltaTime) override { this->deltaTime = deltaTime; }
+        virtual void Update(float deltaTime, const Parameters& p) override { this->deltaTime = deltaTime; }
         virtual void Evaluate(AnimationPose& pose) override { }
     };
 }
@@ -75,7 +75,7 @@ TEST(BlendNode, Update_UpdatesChildNodes)
     MockNode node2;
     BlendNode blendNode(node1, node2);
 
-    blendNode.Update(69.0f);
+    blendNode.Update(69.0f, Parameters());
 
     EXPECT_EQ(node1.deltaTime, 69.0f);
     EXPECT_EQ(node2.deltaTime, 69.0f);
@@ -89,8 +89,8 @@ TEST(BlendNode, Blend_0)
     ClipNode node2(clip);
     BlendNode blendNode(node1, node2);
 
-    node2.Update(1.0f);
-    blendNode.SetNode1Weight(0.0f);
+    node2.Update(1.0f, Parameters());
+    blendNode.SetBlend(0.0f);
 
     AnimationPose pose;
     blendNode.Evaluate(pose);
@@ -112,8 +112,8 @@ TEST(BlendNode, Blend_0_5)
     ClipNode node2(clip);
     BlendNode blendNode(node1, node2);
 
-    node2.Update(1.0f);
-    blendNode.SetNode1Weight(0.5f);
+    node2.Update(1.0f, Parameters());
+    blendNode.SetBlend(0.5f);
 
     AnimationPose pose;
     blendNode.Evaluate(pose);

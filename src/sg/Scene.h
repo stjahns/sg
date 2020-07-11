@@ -11,9 +11,11 @@
 #include "anim/Skeleton.h"
 #include "anim/AnimationClip.h"
 #include "anim/AnimationNode.h"
+#include "anim/StateMachineNode.h"
 
 class GLFWwindow;
 class LineRenderer;
+class StateMachineNode;
 
 class Scene
 {
@@ -112,7 +114,11 @@ class Scene
         Skeleton skeleton;
         AnimationClip clip1;
         AnimationClip clip2;
-        float tick;
 
-        float blend;
+        std::unique_ptr<ClipNode> clipNode1;
+        std::unique_ptr<ClipNode> clipNode2;
+        std::unique_ptr<StateMachineNode> stateMachine;
+
+        int p1;
+        float transitionTime;
 };
