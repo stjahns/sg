@@ -88,9 +88,9 @@ void Demo::LoadFox()
 
     float spacing = 200.0f;
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 50; ++i)
     {
-        for (int j = 0; j < 10; ++j)
+        for (int j = 0; j < 50; ++j)
         {
             auto entity = entityRegistry.create();
 
@@ -162,6 +162,13 @@ void Demo::Run()
 void Demo::ForwardRenderModels()
 {
     auto view = entityRegistry.view<EntityTransform, EntityModel>();
+
+    if (models.size() == 1)
+    {
+        // TODO figure out how to handle batching multple models
+        renderer.PrepareForwardRenderModelBatch(scene, models[0], shaderProgram);
+    }
+
     for (auto entity : view)
     {
         auto& transform = view.get<EntityTransform>(entity);
@@ -169,7 +176,7 @@ void Demo::ForwardRenderModels()
 
         Model& model = models[entityModel.modelIndex];
        
-        renderer.ForwardRenderModel(scene, model, shaderProgram, transform.ToMat4());
+        renderer.ForwardRenderModel(model, shaderProgram, transform.ToMat4());
     }
 }
 

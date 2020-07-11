@@ -437,13 +437,15 @@ void Renderer::ForwardRender(Scene& scene, ShaderProgram& activeShader)
 
     DirectionalLight& directionalLight = scene.GetDirectionalLight();
 
+
     for (Model* model : scene.GetModels())
     {
-        ForwardRenderModel(scene, *model, activeShader, model->GetTransform());
+        PrepareForwardRenderModelBatch(scene, *model, activeShader);
+        ForwardRenderModel(*model, activeShader, model->GetTransform());
     }
 }
 
-void Renderer::ForwardRenderModel(Scene& scene, Model& model, ShaderProgram& activeShader, const mat4& transform)
+void Renderer::PrepareForwardRenderModelBatch(Scene& scene, Model& model, ShaderProgram& activeShader)
 {
     glm::mat4 view = scene.GetCamera().GetViewMatrix();
     glm::mat4 projection = scene.GetCamera().GetProjection();
@@ -469,8 +471,6 @@ void Renderer::ForwardRenderModel(Scene& scene, Model& model, ShaderProgram& act
         activeShader.SetUniformi("depthMap", 4); // test...
         //activeShader.SetUniform("lightSpaceMatrix", shadowMap.GetLightSpaceMatrix(directionalLight.direction));
 
-        // TODO -- should SetUniform ensure shader is active?
-        activeShader.SetUniform("model", transform);
         activeShader.SetUniform("view", view);
         activeShader.SetUniform("projection", projection);
 
@@ -523,10 +523,13 @@ void Renderer::ForwardRenderModel(Scene& scene, Model& model, ShaderProgram& act
         }
 
         activeShader.SetUniform("viewPos", scene.GetCamera().GetPosition());
-
-        model.Draw();
-        glCheckError();
     }
+}
+
+void Renderer::ForwardRenderModel(Model& model, ShaderProgram& activeShader, const mat4& transform)
+{
+    activeShader.SetUniform("model", transform);
+    model.Draw();
 }
 
 void Renderer::RenderPointLightShadowMaps(Scene& scene)

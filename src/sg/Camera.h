@@ -108,6 +108,8 @@ public:
 			vec3 up(camera[1]);
 			m_Position += up * fCameraSpeed * fTranslateRateScale;
 		}
+
+		m_View = ComputeViewMatrix();
 	}
 
 	mat4 GetMatrix()
@@ -121,6 +123,11 @@ public:
 	}
 
 	mat4 GetViewMatrix()
+	{
+		return m_View;
+	}
+
+	mat4 ComputeViewMatrix()
 	{
 		// FIXME -- probably not the best way to do this
 		return inverse(GetMatrix());
@@ -147,6 +154,8 @@ public:
 	}
 
 private:
+
+	mat4 m_View;
 
 	vec3 m_Position;
 	vec3 m_EulerRotation;

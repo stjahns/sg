@@ -54,7 +54,9 @@ public:
     void DeferredRender(Scene& scene);
 
     void ForwardRender(Scene& scene, ShaderProgram& activeShader);
-    void ForwardRenderModel(Scene& scene, Model& model, ShaderProgram& activeShader, const mat4& transform);
+
+    void PrepareForwardRenderModelBatch(Scene& scene, Model& model, ShaderProgram& activeShader);
+    void ForwardRenderModel(Model& model, ShaderProgram& activeShader, const mat4& transform);
 
     void RenderPointLightShadowMaps(Scene& scene);
 
