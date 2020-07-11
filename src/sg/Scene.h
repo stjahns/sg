@@ -8,58 +8,10 @@
 #include "Camera.h"
 #include "ShaderProgram.h"
 
-#include "anim/Skeleton.h"
-#include "anim/AnimationClip.h"
-#include "anim/AnimationNode.h"
-#include "anim/StateMachineNode.h"
-
-class LineRenderer;
-class StateMachineNode;
-
 class Scene
 {
     public:
         Scene();
-
-        void SponzaTest()
-        {
-            LoadModel("Models/gltf/sponza.gltf");
-        }
-
-        void NanoSuitTest()
-        {
-            LoadModel("Models/nanosuit/nanosuit.obj");
-        }
-
-        void CornellBoxTest()
-        {
-            LoadModel("Models/cornell-box/cornellbox-glossy.obj");
-
-            directionalLight.diffuse = vec3(0);
-            directionalLight.specular = vec3(0);
-            directionalLight.ambient = vec3(0);
-            numPointLights = 1;
-
-            pointLights[0].position.y = 2.0f;
-            pointLights[0].constant = 0.0f;
-            pointLights[0].linear = 0.0f;
-            pointLights[0].quadratic = 1.0f;
-
-            camera.SetPosition(vec3(0, 1.0, 3.5));
-
-            // DONE - Gamma correction
-            // TODO - Fix point shadow frustums
-            // TODO - Blur postprocessing
-            // TODO - Blinn-phong
-            // TODO - SSAO
-            // TODO - Soft shadow mapping
-            // TODO - Anti aliasing - Forward Rendering + MSAA?
-            // TODO - Anti aliasing - FXAA?
-            // TODO - HDR
-            // TODO - Bloom?
-        }
-
-        void Update(LineRenderer& lineRenderer, ShaderProgram& shader, float deltaTime);
 
         void LoadModel(const char* path)
         {
@@ -76,7 +28,6 @@ class Scene
         void AddWidgets();
 
         void DrawLights();
-        void DebugDraw();
 
         Camera& GetCamera() { return camera; }
 
@@ -109,15 +60,4 @@ class Scene
         ShaderProgram lightShader;
 
         Camera camera;
-
-        Skeleton skeleton;
-        AnimationClip clip1;
-        AnimationClip clip2;
-
-        std::unique_ptr<ClipNode> clipNode1;
-        std::unique_ptr<ClipNode> clipNode2;
-        std::unique_ptr<StateMachineNode> stateMachine;
-
-        int p1;
-        float transitionTime;
 };

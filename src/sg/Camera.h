@@ -60,7 +60,7 @@ public:
 	void Update(GLFWWindow& window)
 	{
 		const float fRotateRateScale = 0.003f;
-		const float fTranslateRateScale = 0.500f;
+		const float fTranslateRateScale = 1.500f;
 
 		if (m_bMouseDrag)
 		{
