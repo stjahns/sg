@@ -12,9 +12,9 @@ set(BUILD_ASSIMP_TOOLS  ON)
 set(ASSIMP_BUILD_STATIC_LIB ON)
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /std:c++17")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -std=c++17")
     if(NOT WIN32)
         set(GLAD_LIBRARIES dl)
     endif()
@@ -25,7 +25,8 @@ include_directories(src/vendor/
                     src/vendor/glfw/include/
                     src/vendor/assimp
                     src/vendor/glm/
-                    src/vendor/imgui/)
+                    src/vendor/imgui/
+                    src/vendor/entt/single_include/entt/)
 
 
 file(GLOB VENDORS_SOURCES src/vendor/glad/src/glad.c

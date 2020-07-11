@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
+#include <entt.hpp>
 
 #include "Light.h"
 #include "Model.h"
@@ -29,9 +30,17 @@ class Demo
         void Update(float deltaTime);
         void Widgets();
 
+        void LoadFox();
+
+        void ForwardRenderModels();
+
         GLFWWindow& window;
 
         Scene scene;
+
+        entt::registry entityRegistry;
+
+        std::vector<Model> models;
 
         Renderer renderer;
         LineRenderer lineRenderer;

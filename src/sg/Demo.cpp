@@ -6,28 +6,52 @@
 #include "anim/AssimpClipLoader.h"
 
 #include <tiny_gltf.h>
-
 #include "Demo.h"
+
+struct EntityTransform
+{
+    vec3 position;
+    quat orientation; // wonder if splitting these up is useful sometimes? (eg broad phase culling?)
+
+    mat4 ToMat4()
+    {
+        mat4 matrix = mat4_cast(orientation);
+        matrix[3] = vec4(position, 1.0f);
+        return matrix;
+    }
+};
+
+struct EntityModel
+{
+    int modelIndex;
+};
+
+typedef vec3 Velocity;
 
 Demo::Demo(GLFWWindow& window) 
     : window(window)
     , shaderProgram("shaders/skinned.vs.glsl", "shaders/unlit.fs.glsl")
     , drawWireframe(false)
     , p1(0.0f)
+    , time(glfwGetTime())
 {
     window.AddMouseEventHandler([&](MouseEvent e) { scene.GetCamera().OnMouseEvent(e); });
+    LoadFox();
+}
 
+void Demo::LoadFox()
+{
     const std::string filename = "Models/Fox/gLTF/Fox.gltf";
     const std::string assetPath = GetAssetPath(filename);
 
     tinygltf::TinyGLTF loader;
-    tinygltf::Model model;
+    tinygltf::Model gltfModel;
     std::string err;
     std::string warn;
 
-    if (loader.LoadASCIIFromFile(&model, &err, &warn, assetPath))
+    if (loader.LoadASCIIFromFile(&gltfModel, &err, &warn, assetPath))
     {
-        skeleton.Load(model);
+        skeleton.Load(gltfModel);
     }
 
     Assimp::Importer importer;
@@ -59,9 +83,21 @@ Demo::Demo(GLFWWindow& window)
         }
     }
 
-    scene.LoadModel(filename.c_str());
+    Model& model = models.emplace_back(filename.c_str());
+    model.Load();
 
-    time = glfwGetTime();
+    float spacing = 200.0f;
+
+    for (int i = 0; i < 10; ++i)
+    {
+        for (int j = 0; j < 10; ++j)
+        {
+            auto entity = entityRegistry.create();
+
+            entityRegistry.emplace<EntityTransform>(entity, vec3(-i * spacing, 0.0f, -j * spacing), quat());
+            entityRegistry.emplace<EntityModel>(entity, 0);
+        }
+    }
 }
 
 void Demo::Run()
@@ -105,6 +141,8 @@ void Demo::Run()
 
 		renderer.ForwardRender(scene, shaderProgram);
 
+        ForwardRenderModels();
+
         if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		scene.DrawLights();
@@ -121,7 +159,20 @@ void Demo::Run()
     }
 }
 
-// TODO - safer type for time (ms, s??)
+void Demo::ForwardRenderModels()
+{
+    auto view = entityRegistry.view<EntityTransform, EntityModel>();
+    for (auto entity : view)
+    {
+        auto& transform = view.get<EntityTransform>(entity);
+        auto& entityModel = view.get<EntityModel>(entity);
+
+        Model& model = models[entityModel.modelIndex];
+       
+        renderer.ForwardRenderModel(scene, model, shaderProgram, transform.ToMat4());
+    }
+}
+
 void Demo::Update(float deltaTime)
 {
     if (stateMachine)

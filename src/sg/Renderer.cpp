@@ -6,7 +6,7 @@
 float lerp(float a, float b, float f)
 {
     return a + f * (b - a);
-}  
+}
 
 void Renderer::Widgets()
 {
@@ -76,14 +76,14 @@ void Renderer::InitGBuffer()
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpecBuffer, 0);
 
     // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
-    unsigned int attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+    unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
     glDrawBuffers(3, attachments);
 
     glGenRenderbuffers(1, &gDepthRenderBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, gDepthRenderBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gDepthRenderBuffer);  
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, gDepthRenderBuffer);
 
     // Setup HDR framebuffer
     glGenFramebuffers(1, &hdrFBO);
@@ -103,7 +103,7 @@ void Renderer::InitGBuffer()
     glBindTexture(GL_TEXTURE_2D, postColorBuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, postColorBuffer, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
     glDrawBuffers(1, attachments);
@@ -115,8 +115,8 @@ void Renderer::InitGBuffer()
     glGenTextures(1, &ssaoColorBuffer);
     glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
     glDrawBuffers(1, attachments);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -127,8 +127,8 @@ void Renderer::InitGBuffer()
     glGenTextures(1, &ssaoBlurColorBuffer);
     glBindTexture(GL_TEXTURE_2D, ssaoBlurColorBuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, VIEWPORT_WIDTH, VIEWPORT_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoBlurColorBuffer, 0);
     glDrawBuffers(1, attachments);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -172,7 +172,7 @@ void Renderer::InitGBuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::DeferredRender(Scene &scene)
+void Renderer::DeferredRender(Scene& scene)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, gBufferFBO);
 
@@ -187,7 +187,6 @@ void Renderer::DeferredRender(Scene &scene)
     geometryPassShader.SetUniformi("material.diffuse", 0);
     geometryPassShader.SetUniformi("material.normal", 2);
 
-    //pthread_mutex_lock(&scene.mutexModels);
     for (Model* model : scene.GetModels())
     {
         if (model->IsLoaded() && !model->IsBound())
@@ -204,7 +203,6 @@ void Renderer::DeferredRender(Scene &scene)
             glCheckError();
         }
     }
-    //pthread_mutex_unlock(&scene.mutexModels);
 
     if (ssaoEnabled)
     {
@@ -269,7 +267,7 @@ void Renderer::DeferredRender(Scene &scene)
 #if HDR_FRAMEBUFFER
     glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
     {
         glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -283,7 +281,7 @@ void Renderer::DeferredRender(Scene &scene)
 
     glBindFramebuffer(GL_FRAMEBUFFER, postFBO);
 
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
     {
         glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -335,21 +333,21 @@ void Renderer::DeferredRender(Scene &scene)
 
     glBindVertexArray(quadVAO);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gPositionBuffer);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, gPositionBuffer);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, gNormalBuffer);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, gNormalBuffer);
 
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, gAlbedoSpecBuffer);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, gAlbedoSpecBuffer);
 
     glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_2D, ssaoBlurColorBuffer);
 
     // TODO -- unbind/cleanup stuff!
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     glCheckError();
 
 #if HDR_FRAMEBUFFER
@@ -357,9 +355,9 @@ void Renderer::DeferredRender(Scene &scene)
     hdrShader.Use();
     hdrShader.SetUniformi("hdrBuffer", 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     glCheckError();
 #endif
 
@@ -367,9 +365,9 @@ void Renderer::DeferredRender(Scene &scene)
     postShader.Use();
     postShader.SetUniformi("colorBuffer", 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, postColorBuffer);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, postColorBuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     glCheckError();
 
     // Copy depth information from GBuffer to default framebuffer
@@ -394,12 +392,11 @@ void Renderer::DeferredRender(Scene &scene)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::ForwardRender(Scene &scene, ShaderProgram &activeShader)
-{
-    //pthread_mutex_lock(&scene.mutexModels);
 
-    PointLight *pointLights = scene.GetPointLights();
-    SpotLight *spotLights = scene.GetSpotLights();
+void Renderer::ForwardRender(Scene& scene, ShaderProgram& activeShader)
+{
+    PointLight* pointLights = scene.GetPointLights();
+    SpotLight* spotLights = scene.GetSpotLights();
 
     glm::mat4 view = scene.GetCamera().GetViewMatrix();
     glm::mat4 projection = scene.GetCamera().GetProjection();
@@ -442,88 +439,97 @@ void Renderer::ForwardRender(Scene &scene, ShaderProgram &activeShader)
 
     for (Model* model : scene.GetModels())
     {
-        if (model->IsLoaded() && !model->IsBound())
-        {
-            model->Bind();
-        }
-
-        if (model->IsBound())
-        {
-            activeShader.Use();
-
-
-            activeShader.SetUniformi("material.diffuse", 0);
-            activeShader.SetUniformi("material.specular", 1);
-            activeShader.SetUniformi("material.normal", 2);
-
-            activeShader.SetUniformi("shadowMap", 3);
-            activeShader.SetUniformi("depthMap", 4); // test...
-            activeShader.SetUniform("lightSpaceMatrix", shadowMap.GetLightSpaceMatrix(directionalLight.direction));
-
-
-            // TODO -- should SetUniform ensure shader is active?
-            activeShader.SetUniform("model", model->GetTransform());
-            activeShader.SetUniform("view", view);
-            activeShader.SetUniform("projection", projection);
-
-            //activeShader.SetUniform("objectColor", vec3(1.0f, 1.0f, 1.0f));
-            //activeShader.SetUniform("material.diffuse", vec3(1.0f, 1.0f, 1.0f));
-            //activeShader.SetUniform("material.ambient", vec3(1.0f, 1.0f, 1.0f));
-            //activeShader.SetUniform("material.specular", vec3(1.0f, 1.0f, 1.0f));
-
-            activeShader.SetUniform("directionalLight.direction", directionalLight.direction);
-            // TODO - Fix point shadow frustums
-            activeShader.SetUniform("directionalLight.ambient", directionalLight.ambient);
-            activeShader.SetUniform("directionalLight.diffuse", directionalLight.diffuse);
-            activeShader.SetUniform("directionalLight.specular", directionalLight.specular);
-
-            activeShader.SetUniform("numPointLights", scene.GetNumPointLights());
-
-            for (int i = 0; i < scene.GetNumPointLights(); ++i)
-            {
-                std::ostringstream id;
-                id << "pointLights[" << i << "]";
-
-                PointLight &light = pointLights[i];
-                activeShader.SetUniform((id.str() + ".position").c_str(), pointLights[i].position);
-                activeShader.SetUniform((id.str() + ".ambient").c_str(), pointLights[i].ambient);
-                activeShader.SetUniform((id.str() + ".diffuse").c_str(), pointLights[i].diffuse);
-                activeShader.SetUniform((id.str() + ".specular").c_str(), pointLights[i].specular);
-                activeShader.SetUniform((id.str() + ".constant").c_str(), pointLights[i].constant);
-                activeShader.SetUniform((id.str() + ".linear").c_str(), pointLights[i].linear);
-                activeShader.SetUniform((id.str() + ".quadratic").c_str(), pointLights[i].quadratic);
-            }
-
-            activeShader.SetUniform("numSpotLights", scene.GetNumSpotLights());
-
-            for (int i = 0; i < scene.GetNumSpotLights(); ++i)
-            {
-                std::ostringstream id;
-                id << "spotLights[" << i << "]";
-
-                SpotLight &light = spotLights[i];
-                activeShader.SetUniform((id.str() + ".position").c_str(), spotLights[i].position);
-                activeShader.SetUniform((id.str() + ".direction").c_str(), spotLights[i].direction);
-                activeShader.SetUniform((id.str() + ".ambient").c_str(), spotLights[i].ambient);
-                activeShader.SetUniform((id.str() + ".diffuse").c_str(), spotLights[i].diffuse);
-                activeShader.SetUniform((id.str() + ".specular").c_str(), spotLights[i].specular);
-                activeShader.SetUniform((id.str() + ".constant").c_str(), spotLights[i].constant);
-                activeShader.SetUniform((id.str() + ".linear").c_str(), spotLights[i].linear);
-                activeShader.SetUniform((id.str() + ".quadratic").c_str(), spotLights[i].quadratic);
-                activeShader.SetUniform((id.str() + ".cutoff").c_str(), spotLights[i].cutOff);
-                activeShader.SetUniform((id.str() + ".outercutoff").c_str(), spotLights[i].outerCutOff);
-            }
-
-            activeShader.SetUniform("viewPos", scene.GetCamera().GetPosition());
-
-            model->Draw();
-            glCheckError();
-        }
+        ForwardRenderModel(scene, *model, activeShader, model->GetTransform());
     }
-    //pthread_mutex_unlock(&scene.mutexModels);
 }
 
-void Renderer::RenderPointLightShadowMaps(Scene &scene)
+void Renderer::ForwardRenderModel(Scene& scene, Model& model, ShaderProgram& activeShader, const mat4& transform)
+{
+    glm::mat4 view = scene.GetCamera().GetViewMatrix();
+    glm::mat4 projection = scene.GetCamera().GetProjection();
+    DirectionalLight& directionalLight = scene.GetDirectionalLight();
+    PointLight* pointLights = scene.GetPointLights();
+    SpotLight* spotLights = scene.GetSpotLights();
+
+    if (model.IsLoaded() && !model.IsBound())
+    {
+        model.Bind();
+    }
+
+    if (model.IsBound())
+    {
+        activeShader.Use();
+
+
+        activeShader.SetUniformi("material.diffuse", 0);
+        activeShader.SetUniformi("material.specular", 1);
+        activeShader.SetUniformi("material.normal", 2);
+
+        activeShader.SetUniformi("shadowMap", 3);
+        activeShader.SetUniformi("depthMap", 4); // test...
+        //activeShader.SetUniform("lightSpaceMatrix", shadowMap.GetLightSpaceMatrix(directionalLight.direction));
+
+        // TODO -- should SetUniform ensure shader is active?
+        activeShader.SetUniform("model", transform);
+        activeShader.SetUniform("view", view);
+        activeShader.SetUniform("projection", projection);
+
+        //activeShader.SetUniform("objectColor", vec3(1.0f, 1.0f, 1.0f));
+        //activeShader.SetUniform("material.diffuse", vec3(1.0f, 1.0f, 1.0f));
+        //activeShader.SetUniform("material.ambient", vec3(1.0f, 1.0f, 1.0f));
+        //activeShader.SetUniform("material.specular", vec3(1.0f, 1.0f, 1.0f));
+
+        activeShader.SetUniform("directionalLight.direction", directionalLight.direction);
+        // TODO - Fix point shadow frustums
+        activeShader.SetUniform("directionalLight.ambient", directionalLight.ambient);
+        activeShader.SetUniform("directionalLight.diffuse", directionalLight.diffuse);
+        activeShader.SetUniform("directionalLight.specular", directionalLight.specular);
+
+        activeShader.SetUniform("numPointLights", scene.GetNumPointLights());
+
+        for (int i = 0; i < scene.GetNumPointLights(); ++i)
+        {
+            std::ostringstream id;
+            id << "pointLights[" << i << "]";
+
+            PointLight& light = pointLights[i];
+            activeShader.SetUniform((id.str() + ".position").c_str(), pointLights[i].position);
+            activeShader.SetUniform((id.str() + ".ambient").c_str(), pointLights[i].ambient);
+            activeShader.SetUniform((id.str() + ".diffuse").c_str(), pointLights[i].diffuse);
+            activeShader.SetUniform((id.str() + ".specular").c_str(), pointLights[i].specular);
+            activeShader.SetUniform((id.str() + ".constant").c_str(), pointLights[i].constant);
+            activeShader.SetUniform((id.str() + ".linear").c_str(), pointLights[i].linear);
+            activeShader.SetUniform((id.str() + ".quadratic").c_str(), pointLights[i].quadratic);
+        }
+
+        activeShader.SetUniform("numSpotLights", scene.GetNumSpotLights());
+
+        for (int i = 0; i < scene.GetNumSpotLights(); ++i)
+        {
+            std::ostringstream id;
+            id << "spotLights[" << i << "]";
+
+            SpotLight& light = spotLights[i];
+            activeShader.SetUniform((id.str() + ".position").c_str(), spotLights[i].position);
+            activeShader.SetUniform((id.str() + ".direction").c_str(), spotLights[i].direction);
+            activeShader.SetUniform((id.str() + ".ambient").c_str(), spotLights[i].ambient);
+            activeShader.SetUniform((id.str() + ".diffuse").c_str(), spotLights[i].diffuse);
+            activeShader.SetUniform((id.str() + ".specular").c_str(), spotLights[i].specular);
+            activeShader.SetUniform((id.str() + ".constant").c_str(), spotLights[i].constant);
+            activeShader.SetUniform((id.str() + ".linear").c_str(), spotLights[i].linear);
+            activeShader.SetUniform((id.str() + ".quadratic").c_str(), spotLights[i].quadratic);
+            activeShader.SetUniform((id.str() + ".cutoff").c_str(), spotLights[i].cutOff);
+            activeShader.SetUniform((id.str() + ".outercutoff").c_str(), spotLights[i].outerCutOff);
+        }
+
+        activeShader.SetUniform("viewPos", scene.GetCamera().GetPosition());
+
+        model.Draw();
+        glCheckError();
+    }
+}
+
+void Renderer::RenderPointLightShadowMaps(Scene& scene)
 {
     if (!renderPointShadowMaps)
     {
@@ -539,8 +545,8 @@ void Renderer::RenderPointLightShadowMaps(Scene &scene)
     float farPlane = 25.0f;
     glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
 
-    PointLight *pointLights = scene.GetPointLights();
-    SpotLight *spotLights = scene.GetSpotLights();
+    PointLight* pointLights = scene.GetPointLights();
+    SpotLight* spotLights = scene.GetSpotLights();
 
     for (int i = 0; i < scene.GetNumPointLights(); ++i)
     {
@@ -570,7 +576,7 @@ void Renderer::RenderPointLightShadowMaps(Scene &scene)
             pointLightShadowShader.SetUniform("far_plane", farPlane);
             pointLightShadowShader.SetUniform("lightPos", pointLights[i].position);
 
-            for (Model *model : scene.GetModels())
+            for (Model* model : scene.GetModels())
             {
                 pointLightShadowShader.SetUniform("model", model->GetTransform());
                 model->Draw();
@@ -584,7 +590,7 @@ void Renderer::RenderPointLightShadowMaps(Scene &scene)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::RenderDirectionalLightShadowMap(Scene &scene)
+void Renderer::RenderDirectionalLightShadowMap(Scene& scene)
 {
     if (!renderDirectionalShadowMap)
     {
@@ -597,7 +603,7 @@ void Renderer::RenderDirectionalLightShadowMap(Scene &scene)
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
     {
-        for (Model *model : scene.GetModels())
+        for (Model* model : scene.GetModels())
         {
             shadowMap.SetModel(model->GetTransform());
             model->Draw();
@@ -618,7 +624,7 @@ void Renderer::RenderDirectionalLightShadowMap(Scene &scene)
 
 void Renderer::InitQuad()
 {
-	float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+    float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
         // positions   // texCoords
         -1.0f,  1.0f,  0.0f, 1.0f,
         -1.0f, -1.0f,  0.0f, 0.0f,
@@ -629,7 +635,7 @@ void Renderer::InitQuad()
          1.0f,  1.0f,  1.0f, 1.0f
     };
 
-	// screen quad VAO
+    // screen quad VAO
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
     glBindVertexArray(quadVAO);
@@ -641,20 +647,20 @@ void Renderer::InitQuad()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 }
 
-void Renderer::DrawQuad(GLuint textureColorbuffer, vec2 min, vec2 max)       
+void Renderer::DrawQuad(GLuint textureColorbuffer, vec2 min, vec2 max)
 {
     fullscreenShader.Use();
     fullscreenShader.SetUniform("min", min);
     fullscreenShader.SetUniform("max", max);
     glBindVertexArray(quadVAO);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-GLenum glCheckError_(const char *file, int line)
+GLenum glCheckError_(const char* file, int line)
 {
     GLenum errorCode;
     while ((errorCode = glGetError()) != GL_NO_ERROR)
@@ -662,13 +668,13 @@ GLenum glCheckError_(const char *file, int line)
         std::string error;
         switch (errorCode)
         {
-            case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
-            case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
-            case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
-            case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
-            case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
-            case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+        case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+        case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+        case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+        case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+        case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+        case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
         }
         std::cout << error << " | " << file << " (" << line << ")" << std::endl;
     }
