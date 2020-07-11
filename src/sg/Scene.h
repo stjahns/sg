@@ -13,7 +13,6 @@
 #include "anim/AnimationNode.h"
 #include "anim/StateMachineNode.h"
 
-class GLFWwindow;
 class LineRenderer;
 class StateMachineNode;
 

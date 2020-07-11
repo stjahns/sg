@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
+#include "GlfwWindow.h"
 
 using namespace glm;
 
@@ -21,19 +22,20 @@ public:
 	{
 	}
 
-	void OnMouseEvent(GLFWwindow* window, int button, int action, int mods)
+	void OnMouseEvent(MouseEvent e)
 	{
 		if (!ImGui::GetIO().WantCaptureMouse)
 		{
-			if (button == GLFW_MOUSE_BUTTON_LEFT)
+			if (e.button == GLFW_MOUSE_BUTTON_LEFT)
 			{
-				if (action == GLFW_PRESS)
+				if (e.action == GLFW_PRESS)
 				{
-					glfwGetCursorPos(window, &m_MouseStartX, &m_MouseStartY);
+					m_MouseStartX = e.mouseX;
+					m_MouseStartY = e.mouseY;
 					m_bMouseDrag = true;
 					m_RotationStart = m_EulerRotation;
 				}
-				else if (action == GLFW_RELEASE)
+				else if (e.action == GLFW_RELEASE)
 				{
 					m_bMouseDrag = false;
 				}
@@ -55,60 +57,57 @@ public:
 
 	// TODO -- use glfwSetScrollCallback(window, scroll_callback) on OSX
 	// TODO use dT
-	void Update(GLFWwindow* window)
+	void Update(GLFWWindow& window)
 	{
-
 		const float fRotateRateScale = 0.003f;
 		const float fTranslateRateScale = 0.500f;
 
 		if (m_bMouseDrag)
 		{
-
 			double dMouseX;
 			double dMouseY;
-			glfwGetCursorPos(window, &dMouseX, &dMouseY);
+			window.GetCursorPos(dMouseX, dMouseY);
 			vec3 cameraDelta(m_MouseStartY - dMouseY, m_MouseStartX - dMouseX, 0.0f);
 			m_EulerRotation = m_RotationStart + cameraDelta * fCameraRotateSpeed * fRotateRateScale;
 		}
 
 		mat4 camera = GetMatrix();
 
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		if (window.GetKey(GLFW_KEY_W) == GLFW_PRESS)
 		{
 			vec3 forward(camera[2]);
 			m_Position -= forward * fCameraSpeed * fTranslateRateScale;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		if (window.GetKey(GLFW_KEY_S) == GLFW_PRESS)
 		{
 			vec3 forward(camera[2]);
 			m_Position += forward * fCameraSpeed * fTranslateRateScale;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		if (window.GetKey(GLFW_KEY_A) == GLFW_PRESS)
 		{
 			vec3 right(camera[0]);
 			m_Position -= right * fCameraSpeed * fTranslateRateScale;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		if (window.GetKey(GLFW_KEY_D) == GLFW_PRESS)
 		{
 			vec3 right(camera[0]);
 			m_Position += right * fCameraSpeed * fTranslateRateScale;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		if (window.GetKey(GLFW_KEY_Q) == GLFW_PRESS)
 		{
 			vec3 up(camera[1]);
 			m_Position -= up * fCameraSpeed * fTranslateRateScale;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		if (window.GetKey(GLFW_KEY_E) == GLFW_PRESS)
 		{
 			vec3 up(camera[1]);
 			m_Position += up * fCameraSpeed * fTranslateRateScale;
 		}
-
 	}
 
 	mat4 GetMatrix()

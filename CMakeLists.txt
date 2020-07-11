@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(sg)
+project(sg_demo)
 
 option(GLFW_BUILD_DOCS OFF)
 option(GLFW_BUILD_EXAMPLES OFF)
@@ -33,13 +33,7 @@ file(GLOB VENDORS_SOURCES src/vendor/glad/src/glad.c
 
 file(GLOB PROJECT_HEADERS src/sg/*.hpp)
 
-file(GLOB PROJECT_SOURCES src/sg/*.cpp)
-
-
-file(GLOB PROJECT_SHADERS build/shaders/*.comp
-                          build/shaders/*.frag
-                          build/shaders/*.geom
-                          build/shaders/*.vert)
+file(GLOB PROJECT_SOURCES src/main.cpp)
 
 file(GLOB PROJECT_CONFIGS CMakeLists.txt
                           Readme.md
@@ -47,33 +41,21 @@ file(GLOB PROJECT_CONFIGS CMakeLists.txt
                          .gitignore
                          .gitmodules)
 
-source_group("Headers" FILES ${PROJECT_HEADERS})
-source_group("Shaders" FILES ${PROJECT_SHADERS})
-source_group("Sources" FILES ${PROJECT_SOURCES})
-source_group("Vendors" FILES ${VENDORS_SOURCES})
-
 add_definitions(-DGLFW_INCLUDE_NONE
                 -DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
+
+file(GLOB SG_LIB_SOURCES src/sg/*.cpp)
+add_library(sg_lib STATIC ${SG_LIB_SOURCES})
+target_link_libraries(sg_lib assimp)
+target_include_directories(sg_lib PUBLIC src/vender/assimp)
 
 file(GLOB ANIM_SOURCES src/sg/anim/*.cpp)
 add_library(sg_anim STATIC ${ANIM_SOURCES})
 target_link_libraries(sg_anim assimp)
 target_include_directories(sg_anim PUBLIC src/vender/assimp)
 
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS}
-                               ${PROJECT_SHADERS} ${PROJECT_CONFIGS}
-                               ${VENDORS_SOURCES})
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS} ${PROJECT_CONFIGS} ${VENDORS_SOURCES})
 
-
-target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES} assimp sg_anim)
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PROJECT_NAME})
-
-
-add_custom_target(run
-    COMMAND sg
-    DEPENDS sg
-    WORKING_DIRECTORY sg
-)
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} ${GLAD_LIBRARIES} assimp sg_anim sg_lib)
 
 add_subdirectory(test)

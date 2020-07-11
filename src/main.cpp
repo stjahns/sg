@@ -1,18 +1,16 @@
 #define DEBUG 1
 // Local Headers
-#include "glitter.hpp"
-#include "ShaderProgram.h"
-#include "defines.h"
+#include "sg/glitter.hpp"
+#include "sg/ShaderProgram.h"
+#include "sg/defines.h"
 
 // System Headers
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp> // value_ptr
 
 #include <imgui.h>
-#include "imgui_impl_glfw_glad.h"
 
 // Standard Headers
 #include <cstdio>
@@ -25,61 +23,27 @@
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "tiny_gltf.h"
+#include <tiny_gltf.h>
 
-#include "Model.h"
-#include "Camera.h"
-#include "Light.h"
-#include "Scene.h"
-#include "Renderer.h"
-#include "LineRenderer.h"
+#include "sg/Model.h"
+#include "sg/Camera.h"
+#include "sg/Light.h"
+#include "sg/Scene.h"
+#include "sg/Renderer.h"
+#include "sg/LineRenderer.h"
+#include "sg/GlfwWindow.h"
 
 using namespace glm;
 
-Scene* pScene = nullptr;
-
-void mouseCallback(GLFWwindow* window, int button, int action, int mods)
+int main(int /*argc*/, char** /*argv*/) 
 {
-	if (pScene)
+	GLFWWindow window(1280, 800);
+
+	if (!window.Valid())
 	{
-		pScene->GetCamera().OnMouseEvent(window, button, action, mods);
+		fprintf(stderr, "Failed to create OpenGL context");
+		return EXIT_FAILURE;
 	}
-}
-
-// TODO -- don't use 'mstreamingwindow'
-// TODO -- shader manager
-// TODO -- dropdown for different demos?
-// TODO -- resourse cleanup
-
-int main(int /*argc*/, char** /*argv*/) {
-
-    // Load GLFW and Create a Window
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-
-	GLFWwindow *mWindow = glfwCreateWindow(mWidth, mHeight, "SGDemo", nullptr, nullptr);
-
-	// Check for Valid Context
-    if (mWindow == nullptr) 
-	{
-        fprintf(stderr, "Failed to Create OpenGL Context");
-        return EXIT_FAILURE;
-    }
-
-	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-    // Create Context and Load OpenGL Functions
-    glfwMakeContextCurrent(mWindow);
-    gladLoadGL();
-    fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
-
-    // Setup ImGui binding
-    ImGui_ImplGlfwGlad_Init(mWindow, true);
 
 	int selectedShaderIndex = 0;
 
@@ -103,15 +67,11 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	ShaderProgram& activeShader = shaderPrograms[selectedShaderIndex];
 
-
 	glUseProgram(activeShader.GetHandle());
 
 	bool bWireframe = false;
 
-	glfwSetMouseButtonCallback(mWindow, mouseCallback);
-
 	Scene scene;
-	pScene = &scene;
 
 	Renderer renderer;
 
@@ -121,22 +81,26 @@ int main(int /*argc*/, char** /*argv*/) {
 
 	double time = glfwGetTime();
 
-    // Rendering Loop
-    while (glfwWindowShouldClose(mWindow) == false) {
+    window.AddMouseEventHandler([&](MouseEvent e) { 
+        scene.GetCamera().OnMouseEvent(e);
+    });
 
-        glfwPollEvents();
-        ImGui_ImplGlfwGlad_NewFrame();
+	while (!window.ShouldClose())
+	{
+		window.Update();
 
-        if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(mWindow, true);
-
-		if (glfwGetKey(mWindow, GLFW_KEY_R) == GLFW_PRESS)
+		if (window.GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		{
-			for (int i = 0; i < sizeof(shaderPrograms) / sizeof(shaderPrograms[0]); ++i)
-			{
-				shaderPrograms[i].Reload();
-			}
+			window.Close();
 		}
+
+        if (window.GetKey(GLFW_KEY_R) == GLFW_PRESS)
+        {
+            for (int i = 0; i < sizeof(shaderPrograms) / sizeof(shaderPrograms[0]); ++i)
+            {
+                shaderPrograms[i].Reload();
+            }
+        }
 
 		ImVec4 clear_color = ImColor(0.2f, 0.2f, 0.2f, 1.0f);
 
@@ -169,13 +133,12 @@ int main(int /*argc*/, char** /*argv*/) {
 
 		ImGui::End();
 
-
         // Background Fill Color
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		Camera& camera = scene.GetCamera();
-		camera.Update(mWindow);
+		camera.Update(window);
 		mat4 view = camera.GetViewMatrix();
 
 		glEnable(GL_DEPTH_TEST);
@@ -183,10 +146,9 @@ int main(int /*argc*/, char** /*argv*/) {
 		glUseProgram(activeShader.GetHandle());
 
 		// build a model-view-projection
-		GLint w, h;
-		glfwGetWindowSize(mWindow, &w, &h);
 
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)w / (float)h, 0.01f, 10000.0f);
+		WindowSize windowSize = window.GetWindowSize();
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)windowSize.width / (float)windowSize.height, 0.01f, 10000.0f);
 		camera.SetProjection(projection);
 
 		if (bWireframe)
@@ -210,13 +172,8 @@ int main(int /*argc*/, char** /*argv*/) {
 
         ImGui::Render();
 
-        // Flip Buffers and Draw
-        glfwSwapBuffers(mWindow);
+		window.SwapBuffers();
     }
-
-    // Cleanup
-    ImGui_ImplGlfwGlad_Shutdown();
-    glfwTerminate();
 
     return EXIT_SUCCESS;
 }

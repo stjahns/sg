@@ -3,3 +3,4 @@ build/Models
 src/vendor
 out
 .vs
+CMakeSettings.json
