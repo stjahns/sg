@@ -77,9 +77,16 @@ void Demo::LoadFox()
 
     float spacing = 200.0f;
 
-    for (int i = 0; i < 20; ++i)
+    for (int i = 0; i < skeleton.bones.size(); ++i)
     {
-        for (int j = 0; j < 20; ++j)
+        std::ostringstream id;
+        id << "skinMatrix[" << i << "]";
+        skinUniformIds.push_back(id.str());
+    }
+
+    for (int i = 0; i < 50; ++i)
+    {
+        for (int j = 0; j < 50; ++j)
         {
             auto entity = entityRegistry.create();
 
@@ -133,7 +140,7 @@ void Demo::Run()
     {
         window.Update();
 
-        if (window.GetKey(GLFW_KEY_Q) == GLFW_PRESS)
+        if (window.GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
             window.Close();
         }
@@ -196,6 +203,9 @@ void Demo::ForwardRenderModels()
         renderer.PrepareForwardRenderModelBatch(scene, models[0], shaderProgram);
     }
 
+    std::vector<mat4> skinMatrices;
+    skinMatrices.resize(skeleton.bones.size());
+
     for (auto entity : view)
     {
         auto& transform = view.get<EntityTransform>(entity);
@@ -206,15 +216,16 @@ void Demo::ForwardRenderModels()
 
         pose.ComputeObjectFromLocal(skeleton);
 
+        for (int i = 0; i < skeleton.bones.size(); ++i)
+        {
+            skinMatrices[i] = pose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
+        }
+
         shaderProgram.Use();
 
         for (int i = 0; i < skeleton.bones.size(); ++i)
         {
-            mat4 skinMatrix = pose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
-
-            std::ostringstream id;
-            id << "skinMatrix[" << i << "]";
-            shaderProgram.SetUniform((id.str()).c_str(), skinMatrix);
+            shaderProgram.SetUniform(skinUniformIds[i].c_str(), skinMatrices[i]);
         }
 
         renderer.ForwardRenderModel(model, shaderProgram, transform.ToMat4());

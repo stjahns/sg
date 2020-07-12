@@ -58,6 +58,8 @@ class Demo
         double time;
 
         bool drawWireframe;
+        
+        std::vector<std::string> skinUniformIds;
 
         int p1;
 };
