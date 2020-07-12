@@ -21,7 +21,7 @@ void StateMachineNode::Update(float deltaTime, const Parameters& parameters)
 {
     if (currentState != -1)
     {
-        states[currentState].node.Update(deltaTime, parameters);
+        states[currentState]->Update(deltaTime, parameters);
     }
 
     if (transitionNode)
@@ -42,7 +42,7 @@ void StateMachineNode::Evaluate(AnimationPose& pose)
     }
     else if (currentState != -1)
     {
-        states[currentState].node.Evaluate(pose);
+        states[currentState]->Evaluate(pose);
     }
 }
 
@@ -78,8 +78,9 @@ void StateMachineNode::CheckForNewTransition(const Parameters& parameters)
 
 void StateMachineNode::StartTransition(const Transition& transition)
 {
-    AnimationNode& node1 = states[transition.sourceState].node;
-    AnimationNode& node2 = states[transition.destinationState].node;
+    // TODO -- is this ok? are the node lifetimes appropriate?
+    AnimationNode& node1 = *states[transition.sourceState];
+    AnimationNode& node2 = *states[transition.destinationState];
     transitionNode = std::make_unique<BlendNode>(node1, node2);
     transitionNode->SetBlend(0.0f);
     transitionTimeElapsed = 0.0f;

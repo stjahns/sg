@@ -10,11 +10,6 @@
 
 using namespace glm;
 
-struct State
-{
-    AnimationNode& node;
-};
-
 struct Condition
 {
     int parameterId;
@@ -46,10 +41,9 @@ public:
     virtual void Update(float deltaTime, const Parameters& parameters) override;
     virtual void Evaluate(AnimationPose& pose) override;
 
-
-    void AddState(State state)
+    void AddState(std::shared_ptr<AnimationNode> state)
     {
-        states.push_back(state);
+        states.push_back(std::move(state));
 
         if (states.size() == 1)
         {
@@ -74,7 +68,7 @@ private:
     Transition currentTransition;
     float transitionTimeElapsed;
 
-    std::vector<State> states;
+    std::vector<std::shared_ptr<AnimationNode>> states;
     std::vector<Transition> transitions;
 
 };

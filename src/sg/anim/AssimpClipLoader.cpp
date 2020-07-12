@@ -33,6 +33,8 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int
 					channel.AddKey(key.mTime, value);
 				}
 
+				channel.Resample();
+
 				clip.translationChannels.push_back(channel);
 			}
 
@@ -46,6 +48,8 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int
 					const quat value(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z);
 					channel.AddKey(key.mTime, value);
 				}
+
+				channel.Resample();
 
 				clip.rotationChannels.push_back(channel);
 			}

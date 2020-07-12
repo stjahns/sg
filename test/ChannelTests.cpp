@@ -61,7 +61,7 @@ TEST(PositionChannelTests, TwoKeys_Interpolates)
 	EXPECT_VEC3_EQ(channel.Evaulate(0.5f), vec3(0.5));
 }
 
-TEST(PositionChannelTests, ThreeKeys_ContantSampleRate_Interpolates)
+TEST(PositionChannelTests, ThreeKeys_ConstantSampleRate_Interpolates)
 {
 	TranslationChannel channel;
 
@@ -73,22 +73,25 @@ TEST(PositionChannelTests, ThreeKeys_ContantSampleRate_Interpolates)
 	EXPECT_VEC3_EQ(channel.Evaulate(15.0f), vec3(5.0f));
 }
 
-TEST(PositionChannelTests, TenKeys_ContantSampleRate_Interpolates)
+TEST(PositionChannelTests, TenKeys_VariableSampleRate_Interpolates)
 {
 	TranslationChannel channel;
 
-	channel.AddKey(0.0f, vec3(0.0f));
-	channel.AddKey(1.0f, vec3(0.0f));
-	channel.AddKey(2.0f, vec3(0.0f));
-	channel.AddKey(3.0f, vec3(0.0f));
-	channel.AddKey(4.0f, vec3(0.0f));
+	channel.AddKey(0.0f, vec3(1.0f));
+	channel.AddKey(1.0f, vec3(1.0f));
+	channel.AddKey(2.0f, vec3(1.0f));
+	channel.AddKey(3.0f, vec3(1.0f));
+	channel.AddKey(4.0f, vec3(1.0f));
 	channel.AddKey(5.0f, vec3(0.0f));
-	channel.AddKey(6.0f, vec3(0.0f));
-	channel.AddKey(7.0f, vec3(0.0f));
-	channel.AddKey(8.0f, vec3(0.0f));
-	channel.AddKey(9.0f, vec3(10.0f));
+	channel.AddKey(10.0f, vec3(0.0f));
+	channel.AddKey(10.0f, vec3(0.0f));
+	channel.AddKey(10.0f, vec3(0.0f));
+	channel.AddKey(30.0f, vec3(10.0f));
 
-	EXPECT_VEC3_EQ(channel.Evaulate(8.5f), vec3(5.0f));
+	channel.Resample();
+
+	EXPECT_VEC3_EQ(channel.Evaulate(4.5f), vec3(0.5f));
+	EXPECT_VEC3_EQ(channel.Evaulate(20.0f), vec3(5.0f));
 }
 
 TEST(RotationChannelTests, NoKeys_DefaultValue)
@@ -151,25 +154,27 @@ TEST(RotationChannelTests, ThreeKeys_ConstantSampleRate_Interpolates)
 
 	EXPECT_QUAT_EQ(channel.Evaulate(5.0f), quat(vec3(0.0, 0.5, 0)));
 	EXPECT_QUAT_EQ(channel.Evaulate(15.0f), quat(vec3(1.0, 0, 0)));
+	EXPECT_QUAT_EQ(channel.Evaulate(20.0f), quat(vec3(2.0, 0, 0)));
 }
 
-TEST(RotationChannelTests, TenKeys_ConstantSampleRate_Interpolates)
+TEST(RotationChannelTests, TenKeys_VariableSampleRate_Interpolates)
 {
 	RotationChannel channel;
 
-	channel.AddKey(0.0f, quat(vec3(0, 0, 0)));
-    channel.AddKey(1.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(2.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(3.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(4.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(5.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(6.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(7.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(8.0f, quat(vec3(0, 0, 0)));
-	channel.AddKey(9.0f, quat(vec3(0, 1.0, 0)));
+	channel.AddKey(0.0f, quat(vec3(0, 1, 0)));
+    channel.AddKey(1.0f, quat(vec3(0, 1, 0)));
+    channel.AddKey(2.0f, quat(vec3(0, 1, 0)));
+    channel.AddKey(3.0f, quat(vec3(0, 1, 0)));
+    channel.AddKey(4.0f, quat(vec3(0, 1, 0)));
+    channel.AddKey(5.0f, quat(vec3(0, 0, 0)));
+    channel.AddKey(10.0f, quat(vec3(0, 0, 0)));
+    channel.AddKey(10.0f, quat(vec3(0, 0, 0)));
+	channel.AddKey(10.0f, quat(vec3(0, 0, 0)));
+	channel.AddKey(30.0f, quat(vec3(2, 0, 0)));
 
-	EXPECT_QUAT_EQ(channel.Evaulate(8.5f), quat(vec3(0.0, 0.5, 0)));
+	channel.Resample();
+
+	EXPECT_QUAT_EQ(channel.Evaulate(4.5f), quat(vec3(0.0, 0.5, 0)));
+	EXPECT_QUAT_EQ(channel.Evaulate(20.0f), quat(vec3(1.0, 0, 0)));
+	EXPECT_QUAT_EQ(channel.Evaulate(30.0f), quat(vec3(2.0, 0, 0)));
 }
-
-// TODO - should we assert if sample rate isn't constant?
-// TODO - what about times outside key range?

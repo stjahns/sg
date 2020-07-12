@@ -15,9 +15,25 @@ class Pose
 {
 public:
 
+    Pose()
+    {
+    }
+
+    Pose(const Pose& other)
+        : localTransforms(other.localTransforms)
+        , objectTransforms(other.objectTransforms)
+    {
+    }
+
     void ComputeObjectFromLocal(const Skeleton& skeleton);
 
     // TODO -- clean up this interface...
+
+    void Resize(int boneCount)
+    {
+        localTransforms.resize(boneCount);
+        objectTransforms.resize(boneCount);
+    }
 
     const mat4x4& GetLocalTransform(BoneIndex index) const { return localTransforms[index]; }
     mat4x4& GetLocalTransform(BoneIndex index) { return localTransforms[index]; }
