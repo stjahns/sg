@@ -221,7 +221,7 @@ int Model::LoadTexture(aiMaterial *pMaterial, aiTextureType type)
 			}
 
 			Texture t;
-			int width, height, components;
+			int components;
 			t.data = stbi_load(path.C_Str(), &t.width, &t.height, &components, 4);
 
 			if (t.data)

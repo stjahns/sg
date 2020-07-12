@@ -36,13 +36,13 @@ TEST(StateMachineNode, InitialStateIsFirstStateAdded)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
     Parameters parameters;
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(std::move(node1));
+    stateMachine.AddState(std::move(node2));
 
     EXPECT_EQ(stateMachine.GetCurrentState(), 0);
 }
@@ -51,33 +51,33 @@ TEST(StateMachineNode, UpdatesInitialState)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
     Parameters parameters;
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     stateMachine.Update(1.0f, parameters);
     
-    EXPECT_EQ(node1.deltaTime, 1.0f);
-    EXPECT_EQ(node2.deltaTime, 0.0f);
+    EXPECT_EQ(node1->deltaTime, 1.0f);
+    EXPECT_EQ(node2->deltaTime, 0.0f);
 }
 
 TEST(StateMachineNode, EvaluatesInitialState)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
     Parameters parameters;
 
-    node1.translation = vec3(1.0f, 2.0f, 3.0f);
+    node1->translation = vec3(1.0f, 2.0f, 3.0f);
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     AnimationPose pose;
     stateMachine.Evaluate(pose);
@@ -85,18 +85,18 @@ TEST(StateMachineNode, EvaluatesInitialState)
     vec3 t;
     pose.GetTranslation(0, t);
 
-    EXPECT_EQ(t, node1.translation);
+    EXPECT_EQ(t, node1->translation);
 }
 
 TEST(StateMachineNode, Update_WhenConditionNotMet_DoesNotTriggerTransition)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -112,11 +112,11 @@ TEST(StateMachineNode, Update_WhenConditionMet_TriggersTransition)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -132,11 +132,11 @@ TEST(StateMachineNode, Update_DuringTransition_UpdatesBothStateNodes)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -146,22 +146,22 @@ TEST(StateMachineNode, Update_DuringTransition_UpdatesBothStateNodes)
     stateMachine.Update(0.0f, parameters);
     stateMachine.Update(1.0f, parameters);
 
-    EXPECT_EQ(node1.deltaTime, 1.0f);
-    EXPECT_EQ(node2.deltaTime, 1.0f);
+    EXPECT_EQ(node1->deltaTime, 1.0f);
+    EXPECT_EQ(node2->deltaTime, 1.0f);
 }
 
 TEST(StateMachineNode, Evaluate_DuringTransition_BlendsStateOutputs)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    node1.translation = vec3(0.0f);
-    node2.translation = vec3(1.0f);
+    node1->translation = vec3(0.0f);
+    node2->translation = vec3(1.0f);
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -184,11 +184,11 @@ TEST(StateMachineNode, Update_DuringTransition_EndsTransition)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -206,11 +206,11 @@ TEST(StateMachineNode, Update_DuringTransition_EntersState)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -228,11 +228,11 @@ TEST(StateMachineNode, Update_AfterTransition_UpdatesDestinationState)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -243,24 +243,24 @@ TEST(StateMachineNode, Update_AfterTransition_UpdatesDestinationState)
     stateMachine.Update(0.0f, parameters); // start transition
     stateMachine.Update(1.0f, parameters); // do transition
 
-    node1.deltaTime = 0.0f;
-    node2.deltaTime = 0.0f;
+    node1->deltaTime = 0.0f;
+    node2->deltaTime = 0.0f;
 
     stateMachine.Update(1.0f, parameters); // in target state
 
-    EXPECT_EQ(node1.deltaTime, 0.0f);
-    EXPECT_EQ(node2.deltaTime, 1.0f);
+    EXPECT_EQ(node1->deltaTime, 0.0f);
+    EXPECT_EQ(node2->deltaTime, 1.0f);
 }
 
 TEST(StateMachineNode, Evaluate_AfterTransition_EvaluatesDestinationState)
 {
     StateMachineNode stateMachine;
 
-    MockNode node1, node2;
-    State state1{ node1 }, state2{ node2 };
+    auto node1 = std::make_shared<MockNode>();
+    auto node2 = std::make_shared<MockNode>();
 
-    stateMachine.AddState(state1);
-    stateMachine.AddState(state2);
+    stateMachine.AddState(node1);
+    stateMachine.AddState(node2);
 
     Condition condition{ 420, 1337 };
     Transition transition{ 0, 1, 1.0f, condition };
@@ -271,12 +271,9 @@ TEST(StateMachineNode, Evaluate_AfterTransition_EvaluatesDestinationState)
     stateMachine.Update(0.0f, parameters); // start transition
     stateMachine.Update(1.0f, parameters); // do transition
 
-    node1.deltaTime = 0.0f;
-    node2.deltaTime = 0.0f;
-
     stateMachine.Update(1.0f, parameters); // in target state
 
-    node2.translation = vec3(1.0f);
+    node2->translation = vec3(1.0f);
 
     AnimationPose pose;
     stateMachine.Evaluate(pose);
@@ -284,5 +281,5 @@ TEST(StateMachineNode, Evaluate_AfterTransition_EvaluatesDestinationState)
     vec3 t;
     pose.GetTranslation(0, t);
 
-    EXPECT_EQ(t, node2.translation);
+    EXPECT_EQ(t, node2->translation);
 }

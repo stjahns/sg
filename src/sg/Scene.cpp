@@ -96,29 +96,6 @@ void Scene::AddWidgets()
         }
         ImGui::PopID();
     }
-
-    if (ImGui::CollapsingHeader("Models"))
-    {
-        static char pathBuffer[1024];
-        ImGui::InputText("Path", pathBuffer, sizeof(pathBuffer));
-
-        if (ImGui::Button("Add"))
-        {
-            LoadModel(pathBuffer);
-        }
-
-        int modelId = 0;
-
-        for (Model *model : models)
-        {
-			ImGui::PushID(modelId++);
-			if (ImGui::CollapsingHeader(model->GetFilename()))
-			{
-				model->Widgets();
-			}
-			ImGui::PopID();
-        }
-    }
 }
 
 void Scene::DrawLights()

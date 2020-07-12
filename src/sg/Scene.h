@@ -13,25 +13,11 @@ class Scene
     public:
         Scene();
 
-        void LoadModel(const char* path)
-        {
-            Model* model = new Model(path);
-            model->Load();
-            AddModel(model);
-        }
-
-        void AddModel(Model *pModel)
-        {
-            models.push_back(pModel);
-        }
-
         void AddWidgets();
 
         void DrawLights();
 
         Camera& GetCamera() { return camera; }
-
-        std::vector<Model *>& GetModels() { return models; }
 
         PointLight* GetPointLights() { return pointLights; }
         int GetNumPointLights() { return numPointLights; };
@@ -45,8 +31,6 @@ class Scene
         static const int maxSpotLights = 4;
 
     private:
-        std::vector<Model *> models;
-        std::vector<Model *> modelsToLoad;
 
         int numPointLights;
         int numSpotLights;

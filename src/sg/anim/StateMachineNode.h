@@ -64,7 +64,7 @@ private:
 
     int currentState;
 
-    std::unique_ptr<BlendNode> transitionNode;
+    std::unique_ptr<BlendNode> transitionNode; // this doesn't need to be a pointer if we can swap its children
     Transition currentTransition;
     float transitionTimeElapsed;
 

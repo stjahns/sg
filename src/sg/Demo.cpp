@@ -1,4 +1,5 @@
 #include <sstream>
+#include <glm/gtc/random.hpp>
 
 #include "LineRenderer.h"
 #include "Asset.h"
@@ -26,11 +27,20 @@ struct EntityModel
     int modelIndex;
 };
 
+struct AnimGraph
+{
+    AnimGraph(std::unique_ptr<AnimationNode> node) : rootNode(std::move(node))
+    {
+    }
+
+    std::unique_ptr<AnimationNode> rootNode;
+};
+
 typedef vec3 Velocity;
 
 Demo::Demo(GLFWWindow& window) 
     : window(window)
-    , shaderProgram("shaders/skinned.vs.glsl", "shaders/unlit.fs.glsl")
+    , shaderProgram("shaders/skinned.vs.glsl", "shaders/fox.fs.glsl")
     , drawWireframe(false)
     , p1(0.0f)
     , time(glfwGetTime())
@@ -60,27 +70,6 @@ void Demo::LoadFox()
     {
         LoadClip(*assimpScene, skeleton, clip1, 0);
         LoadClip(*assimpScene, skeleton, clip2, 2);
-
-        clipNode1 = std::make_unique<ClipNode>(clip1);
-        clipNode2 = std::make_unique<ClipNode>(clip2);
-
-        State state1{ *clipNode1 }, state2{ *clipNode2 };
-
-        stateMachine = std::make_unique<StateMachineNode>();
-        stateMachine->AddState(state1);
-        stateMachine->AddState(state2);
-
-        {
-            Condition condition{ 1, 1 };
-            Transition transition{ 0, 1, 1000.0f, condition };
-            stateMachine->AddTransition(transition);
-        }
-
-        {
-            Condition condition{ 1, 0 };
-            Transition transition{ 1, 0, 1000.0f, condition };
-            stateMachine->AddTransition(transition);
-        }
     }
 
     Model& model = models.emplace_back(filename.c_str());
@@ -88,14 +77,52 @@ void Demo::LoadFox()
 
     float spacing = 200.0f;
 
-    for (int i = 0; i < 50; ++i)
+    for (int i = 0; i < 20; ++i)
     {
-        for (int j = 0; j < 50; ++j)
+        for (int j = 0; j < 20; ++j)
         {
             auto entity = entityRegistry.create();
 
             entityRegistry.emplace<EntityTransform>(entity, vec3(-i * spacing, 0.0f, -j * spacing), quat());
             entityRegistry.emplace<EntityModel>(entity, 0);
+
+            auto& pose = entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
+
+            auto clipNode1 = std::make_unique<ClipNode>(clip1);
+            auto clipNode2 = std::make_unique<ClipNode>(clip2);
+
+            auto stateMachineNode = std::make_unique<StateMachineNode>();
+
+            stateMachineNode->AddState(std::move(clipNode1));
+            stateMachineNode->AddState(std::move(clipNode2));
+
+            {
+                Condition condition{ 1, 1 };
+                Transition transition{ 0, 1, 1000.0f, condition };
+                stateMachineNode->AddTransition(transition);
+            }
+
+            {
+                Condition condition{ 1, 0 };
+                Transition transition{ 1, 0, 1000.0f, condition };
+                stateMachineNode->AddTransition(transition);
+            }
+
+            {
+                Condition condition{ 1, 2 };
+                Transition transition{ 0, 0, 1000.0f, condition };
+                stateMachineNode->AddTransition(transition);
+            }
+
+            {
+                Condition condition{ 1, 2 };
+                Transition transition{ 1, 1, 1000.0f, condition };
+                stateMachineNode->AddTransition(transition);
+            }
+
+            stateMachineNode->Update(glm::linearRand(0.0f, 2000.0f), Parameters{ { 1, glm::linearRand(0, 2) } });
+
+            entityRegistry.emplace<AnimGraph>(entity, std::move(stateMachineNode));
         }
     }
 }
@@ -106,7 +133,7 @@ void Demo::Run()
     {
         window.Update();
 
-        if (window.GetKey(GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        if (window.GetKey(GLFW_KEY_Q) == GLFW_PRESS)
         {
             window.Close();
         }
@@ -161,7 +188,7 @@ void Demo::Run()
 
 void Demo::ForwardRenderModels()
 {
-    auto view = entityRegistry.view<EntityTransform, EntityModel>();
+    auto view = entityRegistry.view<EntityTransform, EntityModel, Pose>();
 
     if (models.size() == 1)
     {
@@ -173,37 +200,45 @@ void Demo::ForwardRenderModels()
     {
         auto& transform = view.get<EntityTransform>(entity);
         auto& entityModel = view.get<EntityModel>(entity);
+        auto& pose = view.get<Pose>(entity);
 
         Model& model = models[entityModel.modelIndex];
-       
+
+        pose.ComputeObjectFromLocal(skeleton);
+
+        shaderProgram.Use();
+
+        for (int i = 0; i < skeleton.bones.size(); ++i)
+        {
+            mat4 skinMatrix = pose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
+
+            std::ostringstream id;
+            id << "skinMatrix[" << i << "]";
+            shaderProgram.SetUniform((id.str()).c_str(), skinMatrix);
+        }
+
         renderer.ForwardRenderModel(model, shaderProgram, transform.ToMat4());
     }
 }
 
 void Demo::Update(float deltaTime)
 {
-    if (stateMachine)
+    auto animGraphView = entityRegistry.view<AnimGraph, Pose>();
+
+    AnimationPose pose;
+    
+    pose.Resize(skeleton.bones.size()); // TODO skeleton.Size()
+ 
+    for (auto entity : animGraphView)
     {
-        Parameters parameters{ {1, p1 } };
-        stateMachine->Update(deltaTime, parameters);
+        auto& animGraph = animGraphView.get<AnimGraph>(entity);
+        animGraph.rootNode->Update(deltaTime, Parameters{ { 1, glm::linearRand(0, 2) } });
 
-        AnimationPose pose;
-        stateMachine->Evaluate(pose);
+        animGraph.rootNode->Evaluate(pose);
 
-        skeleton.ApplyAnimationPose(pose, skeleton.currentPose);
-    }
+        auto& skeletonPose = animGraphView.get<Pose>(entity);
 
-    skeleton.currentPose.ComputeObjectFromLocal(skeleton);
-
-    shaderProgram.Use();
-
-    for (int i = 0; i < skeleton.bones.size(); ++i)
-    {
-        mat4 skinMatrix = skeleton.currentPose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
-
-        std::ostringstream id;
-        id << "skinMatrix[" << i << "]";
-        shaderProgram.SetUniform((id.str()).c_str(), skinMatrix);
+        skeleton.ApplyAnimationPose(pose, skeletonPose);
     }
 
     lineRenderer.AddPose(skeleton, skeleton.currentPose, vec4(1));
@@ -224,6 +259,8 @@ void Demo::Widgets()
     {
         ImGui::DragInt("P1", &p1, 1.0f, 0, 1);
     }
+
+    scene.AddWidgets();
 
     ImGui::End();
 }

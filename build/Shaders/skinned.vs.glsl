@@ -38,6 +38,8 @@ void main()
     position = vec3(model * skinnedPosition);
 	normal = skinnedNormal.xyz;
     texcoord = in_texcoord;
+
     FragPosLightSpace = lightSpaceMatrix * vec4(position, 1.0);
-    TBN = mat3(in_tangent, in_bitangent, in_normal);
+
+    TBN = mat3(skin) * mat3(in_tangent, in_bitangent, in_normal);
 }

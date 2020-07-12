@@ -187,6 +187,7 @@ void Renderer::DeferredRender(Scene& scene)
     geometryPassShader.SetUniformi("material.diffuse", 0);
     geometryPassShader.SetUniformi("material.normal", 2);
 
+    /*
     for (Model* model : scene.GetModels())
     {
         if (model->IsLoaded() && !model->IsBound())
@@ -203,6 +204,7 @@ void Renderer::DeferredRender(Scene& scene)
             glCheckError();
         }
     }
+    */
 
     if (ssaoEnabled)
     {
@@ -438,11 +440,13 @@ void Renderer::ForwardRender(Scene& scene, ShaderProgram& activeShader)
     DirectionalLight& directionalLight = scene.GetDirectionalLight();
 
 
+    /*
     for (Model* model : scene.GetModels())
     {
         PrepareForwardRenderModelBatch(scene, *model, activeShader);
         ForwardRenderModel(*model, activeShader, model->GetTransform());
     }
+    */
 }
 
 void Renderer::PrepareForwardRenderModelBatch(Scene& scene, Model& model, ShaderProgram& activeShader)
@@ -461,7 +465,6 @@ void Renderer::PrepareForwardRenderModelBatch(Scene& scene, Model& model, Shader
     if (model.IsBound())
     {
         activeShader.Use();
-
 
         activeShader.SetUniformi("material.diffuse", 0);
         activeShader.SetUniformi("material.specular", 1);
@@ -579,12 +582,14 @@ void Renderer::RenderPointLightShadowMaps(Scene& scene)
             pointLightShadowShader.SetUniform("far_plane", farPlane);
             pointLightShadowShader.SetUniform("lightPos", pointLights[i].position);
 
+            /* FIXME
             for (Model* model : scene.GetModels())
             {
                 pointLightShadowShader.SetUniform("model", model->GetTransform());
                 model->Draw();
                 glCheckError();
             }
+            */
         }
     }
 
@@ -606,12 +611,14 @@ void Renderer::RenderDirectionalLightShadowMap(Scene& scene)
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
     {
+        /* fixme
         for (Model* model : scene.GetModels())
         {
             shadowMap.SetModel(model->GetTransform());
             model->Draw();
             glCheckError();
         }
+        */
     }
 
     shadowMap.PostRender();
