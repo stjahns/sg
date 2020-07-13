@@ -14,8 +14,13 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int
 {
 	const aiAnimation& animation = *scene.mAnimations[clipIndex];
 
-	// we will normalize time to seconds in the loaded clips
-	double timeScale = 1.0 / animation.mTicksPerSecond;
+	double timeScale = 1.0;
+
+	if (animation.mTicksPerSecond != 0)
+	{
+        // we will normalize time to seconds in the loaded clips
+        timeScale /= animation.mTicksPerSecond;
+	}
 
 	clip.duration = animation.mDuration * timeScale;
 

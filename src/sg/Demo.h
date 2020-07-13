@@ -31,7 +31,7 @@ class Demo
         void Widgets();
 
         void LoadSkeletonFromFile(std::string filename, Skeleton& skeleton);
-        AnimationClip& LoadClipFromFile(std::string filename, Skeleton& skeleton, int clipIndex = 0, std::string idPrefix = "");
+        void LoadClipFromFile(std::string filename, Skeleton& skeleton, int clipIndex = 0, std::string idPrefix = "");
 
         void LoadFox();
         void LoadBiped();

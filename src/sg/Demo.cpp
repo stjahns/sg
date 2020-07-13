@@ -12,7 +12,7 @@
 struct EntityTransform
 {
     vec3 position;
-    quat orientation; // wonder if splitting these up is useful sometimes? (eg broad phase culling?)
+    quat orientation;
 
     mat4 ToMat4()
     {
@@ -47,9 +47,8 @@ Demo::Demo(GLFWWindow& window)
     , timescale(1.0f)
 {
     window.AddMouseEventHandler([&](MouseEvent e) { scene.GetCamera().OnMouseEvent(e); });
-
-    // TODO -- something to switch between these
-    LoadBiped();
+    //LoadBiped();
+    LoadFox();
 }
 
 void Demo::LoadSkeletonFromFile(std::string filename, Skeleton& skeleton)
@@ -64,7 +63,7 @@ void Demo::LoadSkeletonFromFile(std::string filename, Skeleton& skeleton)
     }
 }
 
-AnimationClip& Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, int clipIndex, std::string idPrefix)
+void Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, int clipIndex, std::string idPrefix)
 {
     clips.emplace_back();
     AnimationClip& clip = clips.back();
@@ -87,8 +86,6 @@ AnimationClip& Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, 
         clip.AddRotationChannel(rootMotionRotation);
         clip.AddTranslationChannel(rootMotionTranslation);
     }
-    
-    return clip;
 }
 
 void Demo::LoadBiped()
@@ -96,6 +93,14 @@ void Demo::LoadBiped()
     LoadSkeletonFromFile("Models/ybot/ybot.gltf", skeleton);
 
     skeleton.AddRootMotionBone();
+
+    // TODO something less dumb
+    for (int i = 0; i < skeleton.bones.size(); ++i)
+    {
+        std::ostringstream id;
+        id << "skinMatrix[" << i << "]";
+        skinUniformIds.push_back(id.str());
+    }
 
     LoadClipFromFile("Clips/armada.fbx", skeleton, 0, "mixamorig_");
     LoadClipFromFile("Clips/armada to esquiva.fbx", skeleton, 0, "mixamorig_");
@@ -136,10 +141,17 @@ void Demo::LoadBiped()
     }
 
     entityRegistry.emplace<AnimGraph>(entity, std::move(stateMachineNode));
+
+    Model& model = models.emplace_back("Models/ybot/ybot.gltf");
+    model.Load();
+
+    entityRegistry.emplace<EntityModel>(entity, 0);
 }
 
 void Demo::LoadFox()
 {
+    timescale = 1000.0f;
+
     const std::string filename = "Models/Fox/gLTF/Fox.gltf";
     const std::string assetPath = GetAssetPath(filename);
 
@@ -150,8 +162,9 @@ void Demo::LoadFox()
         LoadSkeleton(*assimpScene, skeleton);
     }
 
-    auto& clip1 = LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 0);
-    auto& clip2 = LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 2);
+    LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 0);
+    LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 1);
+    LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 2);
 
     Model& model = models.emplace_back(filename.c_str());
     model.Load();
@@ -165,9 +178,9 @@ void Demo::LoadFox()
         skinUniformIds.push_back(id.str());
     }
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 5; ++i)
     {
-        for (int j = 0; j < 10; ++j)
+        for (int j = 0; j < 5; ++j)
         {
             auto entity = entityRegistry.create();
 
@@ -175,36 +188,22 @@ void Demo::LoadFox()
             entityRegistry.emplace<EntityModel>(entity, 0);
             entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
 
-            auto clipNode1 = std::make_unique<ClipNode>(clip1);
-            auto clipNode2 = std::make_unique<ClipNode>(clip2);
-
             auto stateMachineNode = std::make_unique<StateMachineNode>();
 
-            stateMachineNode->AddState(std::move(clipNode1));
-            stateMachineNode->AddState(std::move(clipNode2));
+            const int ParameterId = 1;
+            const int TriggerValue = 1;
 
+            for (int i = 0; i < clips.size(); ++i)
             {
-                Condition condition{ 1, 1 };
-                Transition transition{ 0, 1, 1000.0f, condition };
-                stateMachineNode->AddTransition(transition);
-            }
+                auto clipNode = std::make_unique<ClipNode>(clips[i]);
+                clipNode->AddPhaseTrigger({ 0.95f, ParameterId, TriggerValue });
+                stateMachineNode->AddState(std::move(clipNode));
 
-            {
-                Condition condition{ 1, 0 };
-                Transition transition{ 1, 0, 1000.0f, condition };
-                stateMachineNode->AddTransition(transition);
-            }
-
-            {
-                Condition condition{ 1, 2 };
-                Transition transition{ 0, 0, 1000.0f, condition };
-                stateMachineNode->AddTransition(transition);
-            }
-
-            {
-                Condition condition{ 1, 2 };
-                Transition transition{ 1, 1, 1000.0f, condition };
-                stateMachineNode->AddTransition(transition);
+                {
+                    Condition condition{ ParameterId, TriggerValue };
+                    Transition transition{ i, (i + 1) % clips.size(), 1000.0f, condition };
+                    stateMachineNode->AddTransition(transition);
+                }
             }
 
             stateMachineNode->Update(glm::linearRand(0.0f, 2000.0f), Parameters{ { 1, glm::linearRand(0, 2) } });
@@ -352,8 +351,7 @@ void Demo::Update(float deltaTime)
             transform.position += rootMotion * deltaTime;
         }
 
-        mat4 modelTransform = mat4_cast(transform.orientation);
-        modelTransform[3] = vec4(transform.position, 1.0);
+        mat4 modelTransform = transform.ToMat4();
 
         lineRenderer.AddPose(modelTransform, skeleton, skeletonPose, vec4(1));
     }
@@ -365,7 +363,7 @@ void Demo::Widgets()
 
     ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    ImGui::DragFloat("Timescale", &timescale, 0.01, 0.0, 100.0);
+    ImGui::DragFloat("Timescale", &timescale, 0.01, 0.0, 1000.0);
 
     if (ImGui::CollapsingHeader("Render", "RENDER", true, true))
     {
