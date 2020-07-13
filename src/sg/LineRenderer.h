@@ -21,7 +21,7 @@ public:
     void AddLine(vec3 start, vec3 end, vec4 color);
     void AddAxis(const mat4& transform);
 
-    void AddPose(const Skeleton& skeleton, const Pose& pose, vec4 color);
+    void AddPose(const mat4& transform, const Skeleton& skeleton, const Pose& pose, vec4 color);
 
     void Render(const mat4& view, const mat4& projection);
 

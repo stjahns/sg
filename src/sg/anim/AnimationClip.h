@@ -101,6 +101,11 @@ public:
         keys = std::move(resampledKeys);
     }
 
+    int GetKeyCount() const { return keys.size(); }
+    Key<T> GetKey(int i) const { return keys[i]; }
+
+    void Clear() { keys.clear(); }
+
     void AddKey(float time, T value)
     {
         keys.emplace_back(time, value);
@@ -123,14 +128,83 @@ private:
 typedef Channel<vec3> TranslationChannel;
 typedef Channel<quat> RotationChannel;
 
+// TODO -- this needs some cleanup ..
+
 class AnimationClip
 {
 public:
+
     void EvaulatePose(const Skeleton& skeleton, float time, Pose& pose) const;
 
     std::vector<TranslationChannel> translationChannels;
     std::vector<RotationChannel> rotationChannels;
 
     float duration;
+
+    template<typename T>
+    Channel<T>* GetChannelForTarget(std::vector<Channel<T>>& channels, BoneIndex target)
+    {
+        for (int i = 0; i < channels.size(); ++i)
+        {
+            if (channels[i].GetTarget() == BoneIndex(target))
+            {
+                return &channels[i];
+            }
+        }
+
+        return nullptr;
+    }
+
+    void AddTranslationChannel(TranslationChannel channel)
+    {
+        translationChannels.push_back(std::move(channel));
+    }
+
+    void AddRotationChannel(RotationChannel channel)
+    {
+        rotationChannels.push_back(std::move(channel));
+    }
+
+    RotationChannel* GetRotationChannel(BoneIndex target)
+    {
+        return GetChannelForTarget(rotationChannels, target);
+    }
+
+    TranslationChannel* GetTranslationChannel(BoneIndex target)
+    {
+        return GetChannelForTarget(translationChannels, target);
+    }
+
+    void ComputeAdditiveRootMotion(TranslationChannel& rootTranslation, RotationChannel& rootRotation)
+    {
+        const TranslationChannel& sourceTranslation = *GetTranslationChannel(0);
+        const RotationChannel& sourceRotation = *GetRotationChannel(0);
+
+        for (int i = 0; i < sourceTranslation.GetKeyCount() - 1; ++i)
+        {
+            float time1 = sourceTranslation.GetKey(i).time;
+            float time2 = sourceTranslation.GetKey(i + 1).time;
+            float dT = time2 - time1;
+
+            vec3 value1 = sourceTranslation.GetKey(i).value;
+            vec3 value2 = sourceTranslation.GetKey(i + 1).value;
+            vec3 delta = (value2 - value1) * (1.0f / dT);
+
+            rootTranslation.AddKey(time1, delta);
+        }
+
+        for (int i = 0; i < sourceRotation.GetKeyCount() - 1; ++i)
+        {
+            float time1 = sourceRotation.GetKey(i).time;
+            float time2 = sourceRotation.GetKey(i + 1).time;
+            float dT = time2 - time1;
+
+            quat value1 = sourceRotation.GetKey(i).value;
+            quat value2 = sourceRotation.GetKey(i + 1).value;
+            quat delta = normalize((value2 * conjugate(value1)) * (1.0f / dT));
+
+            rootRotation.AddKey(time1, delta);
+        }
+    }
 };
 

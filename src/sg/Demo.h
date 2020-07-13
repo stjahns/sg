@@ -31,7 +31,7 @@ class Demo
         void Widgets();
 
         void LoadSkeletonFromFile(std::string filename, Skeleton& skeleton);
-        void LoadClipFromFile(std::string filename, Skeleton& skeleton, AnimationClip& clip, int clipIndex = 0, std::string idPrefix = "");
+        AnimationClip& LoadClipFromFile(std::string filename, Skeleton& skeleton, int clipIndex = 0, std::string idPrefix = "");
 
         void LoadFox();
         void LoadBiped();
@@ -52,14 +52,15 @@ class Demo
         ShaderProgram shaderProgram;
 
         Skeleton skeleton;
-        AnimationClip clip1;
-        AnimationClip clip2;
+
+        std::vector<AnimationClip> clips;
 
         std::unique_ptr<ClipNode> clipNode1;
         std::unique_ptr<ClipNode> clipNode2;
         std::unique_ptr<StateMachineNode> stateMachine;
 
         double time;
+        float timescale;
 
         bool drawWireframe;
         

@@ -44,6 +44,7 @@ Demo::Demo(GLFWWindow& window)
     , drawWireframe(false)
     , p1(0.0f)
     , time(glfwGetTime())
+    , timescale(1.0f)
 {
     window.AddMouseEventHandler([&](MouseEvent e) { scene.GetCamera().OnMouseEvent(e); });
 
@@ -63,8 +64,11 @@ void Demo::LoadSkeletonFromFile(std::string filename, Skeleton& skeleton)
     }
 }
 
-void Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, AnimationClip& clip, int clipIndex, std::string idPrefix)
+AnimationClip& Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, int clipIndex, std::string idPrefix)
 {
+    clips.emplace_back();
+    AnimationClip& clip = clips.back();
+
     const std::string path = GetAssetPath(filename);
 
     Assimp::Importer importer;
@@ -73,21 +77,55 @@ void Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, AnimationC
     {
         LoadClip(*assimpScene, skeleton, clip, clipIndex, idPrefix);
     }
+
+    if (skeleton.rootMotionBone.IsValid())
+    {
+        TranslationChannel rootMotionTranslation(skeleton.rootMotionBone);
+        RotationChannel rootMotionRotation(skeleton.rootMotionBone);
+
+        clip.ComputeAdditiveRootMotion(rootMotionTranslation, rootMotionRotation);
+        clip.AddRotationChannel(rootMotionRotation);
+        clip.AddTranslationChannel(rootMotionTranslation);
+    }
+    
+    return clip;
 }
 
 void Demo::LoadBiped()
 {
     LoadSkeletonFromFile("Models/ybot/ybot.gltf", skeleton);
-    LoadClipFromFile("Clips/armada.fbx", skeleton, clip2, 0, "mixamorig_");
+
+    skeleton.AddRootMotionBone();
+
+    LoadClipFromFile("Clips/armada.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/armada to esquiva.fbx", skeleton, 0, "mixamorig_");
 
     auto entity = entityRegistry.create();
 
     entityRegistry.emplace<EntityTransform>(entity, vec3(), quat());
     entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
 
-    auto clipNode2 = std::make_unique<ClipNode>(clip2);
+    auto clipNode1 = std::make_unique<ClipNode>(clips[0]);
+    auto clipNode2 = std::make_unique<ClipNode>(clips[1]);
 
-    entityRegistry.emplace<AnimGraph>(entity, std::move(clipNode2));
+    auto stateMachineNode = std::make_unique<StateMachineNode>();
+
+    stateMachineNode->AddState(std::move(clipNode1));
+    stateMachineNode->AddState(std::move(clipNode2));
+
+    {
+        Condition condition{ 1, 0 };
+        Transition transition{ 1, 0, 1.0f, condition };
+        stateMachineNode->AddTransition(transition);
+    }
+
+    {
+        Condition condition{ 1, 1 };
+        Transition transition{ 0, 1, 1.0f, condition };
+        stateMachineNode->AddTransition(transition);
+    }
+
+    entityRegistry.emplace<AnimGraph>(entity, std::move(stateMachineNode));
 }
 
 void Demo::LoadFox()
@@ -100,9 +138,10 @@ void Demo::LoadFox()
     if (assimpScene)
     {
         LoadSkeleton(*assimpScene, skeleton);
-        LoadClip(*assimpScene, skeleton, clip1, 0);
-        LoadClip(*assimpScene, skeleton, clip2, 2);
     }
+
+    auto& clip1 = LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 0);
+    auto& clip2 = LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 2);
 
     Model& model = models.emplace_back(filename.c_str());
     model.Load();
@@ -184,7 +223,7 @@ void Demo::Run()
         double deltaTime = glfwGetTime() - time;
         time += deltaTime;
 
-        Update(deltaTime);
+        Update(deltaTime * timescale);
 
         shaderProgram.Use();
 
@@ -265,26 +304,48 @@ void Demo::ForwardRenderModels()
 
 void Demo::Update(float deltaTime)
 {
-    auto animGraphView = entityRegistry.view<AnimGraph, Pose>();
+    auto view = entityRegistry.view<AnimGraph, Pose, EntityTransform>();
 
     AnimationPose pose;
     
     pose.Resize(skeleton.bones.size()); // TODO skeleton.Size()
  
-    for (auto entity : animGraphView)
+    for (auto entity : view)
     {
-        auto& animGraph = animGraphView.get<AnimGraph>(entity);
-        animGraph.rootNode->Update(deltaTime, Parameters{ { 1, glm::linearRand(0, 2) } });
+        auto& animGraph = view.get<AnimGraph>(entity);
+        animGraph.rootNode->Update(deltaTime, Parameters{ { 1, p1 } });
 
         animGraph.rootNode->Evaluate(pose);
 
-        auto& skeletonPose = animGraphView.get<Pose>(entity);
+        auto& skeletonPose = view.get<Pose>(entity);
+        auto& transform = view.get<EntityTransform>(entity);
+
+        if (skeleton.rootMotionBone.IsValid())
+        {
+            vec3 rootTranslation;
+            pose.GetTranslation(0, rootTranslation);
+            rootTranslation.x = 0.0f;
+            rootTranslation.z = 0.0f;
+            pose.SetTranslation(0, rootTranslation);
+        }
 
         skeleton.ApplyAnimationPose(pose, skeletonPose);
 
         skeletonPose.ComputeObjectFromLocal(skeleton);
 
-        lineRenderer.AddPose(skeleton, skeletonPose, vec4(1));
+        if (skeleton.rootMotionBone.IsValid())
+        {
+            vec3 rootMotion;
+            pose.GetTranslation(skeleton.rootMotionBone, rootMotion);
+
+            rootMotion.y = 0.0f;
+            transform.position += rootMotion * deltaTime;
+        }
+
+        mat4 modelTransform = mat4_cast(transform.orientation);
+        modelTransform[3] = vec4(transform.position, 1.0);
+
+        lineRenderer.AddPose(modelTransform, skeleton, skeletonPose, vec4(1));
     }
 }
 
@@ -293,6 +354,8 @@ void Demo::Widgets()
     ImGui::Begin("Demo");
 
     ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+    ImGui::DragFloat("Timescale", &timescale, 0.01, 0.0, 100.0);
 
     if (ImGui::CollapsingHeader("Render", "RENDER", true, true))
     {

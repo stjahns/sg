@@ -10,7 +10,6 @@
 
 using namespace glm;
 
-/// TODO -- add a bone id prefix?
 bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int clipIndex, std::string idPrefix)
 {
 	const aiAnimation& animation = *scene.mAnimations[clipIndex];

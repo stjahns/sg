@@ -140,7 +140,7 @@ bool Skeleton::Load(const tinygltf::Model& gltfSource)
 
 void Skeleton::ApplyAnimationPose(const AnimationPose& animPose, Pose& skeletonPose)
 {
-    for (int i = 0; i < animPose.GetBoneCount(); ++i)
+    for (int i = 0; i < skeletonPose.localTransforms.size(); ++i)
     {
         mat4 pose = skeletonPose.localTransforms[i];
 

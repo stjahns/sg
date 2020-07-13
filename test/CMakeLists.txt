@@ -9,3 +9,7 @@ add_executable(UnitTests ${TEST_SOURCES})
 include_directories(${PROJECT_SOURCE_DIR}/src/sg/anim)
 
 target_link_libraries(UnitTests gtest_main assimp sg_anim)
+
+
+add_executable(UnitTests_RootMotion RootMotionTests.cpp)
+target_link_libraries(UnitTests_RootMotion gtest_main assimp sg_anim)

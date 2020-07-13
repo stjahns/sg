@@ -43,6 +43,15 @@ class Skeleton
 
         void ApplyAnimationPose(const AnimationPose& animPose, Pose& skeletonPose);
 
+        void AddRootMotionBone()
+        {
+            rootMotionBone = BoneIndex(bones.size());
+            bones.push_back(Bone("rootMotion", BoneIndex(0)));
+            bindPose.localTransforms.push_back(mat4());
+            currentPose.localTransforms.push_back(mat4());
+        }
+
+        BoneIndex rootMotionBone;
         Pose currentPose;
         Pose bindPose;
 
