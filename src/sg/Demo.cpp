@@ -46,7 +46,48 @@ Demo::Demo(GLFWWindow& window)
     , time(glfwGetTime())
 {
     window.AddMouseEventHandler([&](MouseEvent e) { scene.GetCamera().OnMouseEvent(e); });
-    LoadFox();
+
+    // TODO -- something to switch between these
+    LoadBiped();
+}
+
+void Demo::LoadSkeletonFromFile(std::string filename, Skeleton& skeleton)
+{
+    const std::string path = GetAssetPath(filename);
+
+    Assimp::Importer importer;
+    const aiScene* assimpScene = importer.ReadFile(path, 0);
+    if (assimpScene)
+    {
+        LoadSkeleton(*assimpScene, skeleton);
+    }
+}
+
+void Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, AnimationClip& clip, int clipIndex, std::string idPrefix)
+{
+    const std::string path = GetAssetPath(filename);
+
+    Assimp::Importer importer;
+    const aiScene* assimpScene = importer.ReadFile(path, 0);
+    if (assimpScene)
+    {
+        LoadClip(*assimpScene, skeleton, clip, clipIndex, idPrefix);
+    }
+}
+
+void Demo::LoadBiped()
+{
+    LoadSkeletonFromFile("Models/ybot/ybot.gltf", skeleton);
+    LoadClipFromFile("Clips/armada.fbx", skeleton, clip2, 0, "mixamorig_");
+
+    auto entity = entityRegistry.create();
+
+    entityRegistry.emplace<EntityTransform>(entity, vec3(), quat());
+    entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
+
+    auto clipNode2 = std::make_unique<ClipNode>(clip2);
+
+    entityRegistry.emplace<AnimGraph>(entity, std::move(clipNode2));
 }
 
 void Demo::LoadFox()
@@ -54,20 +95,11 @@ void Demo::LoadFox()
     const std::string filename = "Models/Fox/gLTF/Fox.gltf";
     const std::string assetPath = GetAssetPath(filename);
 
-    tinygltf::TinyGLTF loader;
-    tinygltf::Model gltfModel;
-    std::string err;
-    std::string warn;
-
-    if (loader.LoadASCIIFromFile(&gltfModel, &err, &warn, assetPath))
-    {
-        skeleton.Load(gltfModel);
-    }
-
     Assimp::Importer importer;
     const aiScene* assimpScene = importer.ReadFile(assetPath, 0);
     if (assimpScene)
     {
+        LoadSkeleton(*assimpScene, skeleton);
         LoadClip(*assimpScene, skeleton, clip1, 0);
         LoadClip(*assimpScene, skeleton, clip2, 2);
     }
@@ -84,16 +116,15 @@ void Demo::LoadFox()
         skinUniformIds.push_back(id.str());
     }
 
-    for (int i = 0; i < 50; ++i)
+    for (int i = 0; i < 10; ++i)
     {
-        for (int j = 0; j < 50; ++j)
+        for (int j = 0; j < 10; ++j)
         {
             auto entity = entityRegistry.create();
 
             entityRegistry.emplace<EntityTransform>(entity, vec3(-i * spacing, 0.0f, -j * spacing), quat());
             entityRegistry.emplace<EntityModel>(entity, 0);
-
-            auto& pose = entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
+            entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
 
             auto clipNode1 = std::make_unique<ClipNode>(clip1);
             auto clipNode2 = std::make_unique<ClipNode>(clip2);
@@ -153,7 +184,7 @@ void Demo::Run()
         double deltaTime = glfwGetTime() - time;
         time += deltaTime;
 
-        Update(deltaTime * 1000.0f); // can we pick ms vs s?
+        Update(deltaTime);
 
         shaderProgram.Use();
 
@@ -250,9 +281,11 @@ void Demo::Update(float deltaTime)
         auto& skeletonPose = animGraphView.get<Pose>(entity);
 
         skeleton.ApplyAnimationPose(pose, skeletonPose);
-    }
 
-    lineRenderer.AddPose(skeleton, skeleton.currentPose, vec4(1));
+        skeletonPose.ComputeObjectFromLocal(skeleton);
+
+        lineRenderer.AddPose(skeleton, skeletonPose, vec4(1));
+    }
 }
 
 void Demo::Widgets()

@@ -30,7 +30,11 @@ class Demo
         void Update(float deltaTime);
         void Widgets();
 
+        void LoadSkeletonFromFile(std::string filename, Skeleton& skeleton);
+        void LoadClipFromFile(std::string filename, Skeleton& skeleton, AnimationClip& clip, int clipIndex = 0, std::string idPrefix = "");
+
         void LoadFox();
+        void LoadBiped();
 
         void ForwardRenderModels();
 

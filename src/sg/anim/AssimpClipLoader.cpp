@@ -10,16 +10,20 @@
 
 using namespace glm;
 
-bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int clipIndex)
+/// TODO -- add a bone id prefix?
+bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int clipIndex, std::string idPrefix)
 {
 	const aiAnimation& animation = *scene.mAnimations[clipIndex];
 
-	clip.duration = animation.mDuration;
+	// we will normalize time to seconds in the loaded clips
+	double timeScale = 1.0 / animation.mTicksPerSecond;
+
+	clip.duration = animation.mDuration * timeScale;
 
 	for (int channelIndex = 0; channelIndex < animation.mNumChannels; ++channelIndex)
 	{
 		const aiNodeAnim& nodeAnim = *animation.mChannels[channelIndex];
-		BoneIndex boneIndex = skeleton.FindBoneIndex(nodeAnim.mNodeName.C_Str());
+        BoneIndex boneIndex = skeleton.FindBoneIndex(idPrefix + nodeAnim.mNodeName.C_Str());
 		if (boneIndex.IsValid())
 		{
 			if (nodeAnim.mNumPositionKeys > 0)
@@ -30,7 +34,7 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int
 				{
 					const aiVectorKey& key = nodeAnim.mPositionKeys[keyIndex];
 					const vec3 value(key.mValue.x, key.mValue.y, key.mValue.z);
-					channel.AddKey(key.mTime, value);
+					channel.AddKey(key.mTime * timeScale, value);
 				}
 
 				channel.Resample();
@@ -46,7 +50,7 @@ bool LoadClip(const aiScene& scene, Skeleton& skeleton, AnimationClip& clip, int
 				{
 					const aiQuatKey& key = nodeAnim.mRotationKeys[keyIndex];
 					const quat value(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z);
-					channel.AddKey(key.mTime, value);
+					channel.AddKey(key.mTime * timeScale, value);
 				}
 
 				channel.Resample();
