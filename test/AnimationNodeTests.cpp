@@ -17,6 +17,7 @@
 #include "AnimationClip.h"
 #include "AnimationNode.h"
 #include "TestHelpers.h"
+#include "MockNode.h"
 
 using namespace glm;
 
@@ -58,15 +59,56 @@ TEST(ClipNode, AppliesPose_1s)
     EXPECT_VEC3_EQ(translation, vec3(0.0f, 1.0f, 0.0f));
 }
 
-namespace
+TEST(ClipNode, AddPhaseTrigger_SetsParameterOnPhase)
 {
-    struct MockNode : public AnimationNode
-    {
-        float deltaTime;
+    AnimationClip clip = CreateClip();
+    clip.duration = 1.0f;
 
-        virtual void Update(float deltaTime, const Parameters& p) override { this->deltaTime = deltaTime; }
-        virtual void Evaluate(AnimationPose& pose) override { }
-    };
+    ClipNode node(clip);
+
+    float phase = 0.95f;
+    int id = 12;
+    int value = 34;
+
+    node.AddPhaseTrigger({ phase, id, value });
+
+    Parameters p;
+
+    node.Update(0.94f, p);
+
+    EXPECT_EQ(p.size(), 0);
+
+    p.clear();
+    node.Update(0.01f, p);
+
+    ASSERT_EQ(p.size(), 1);
+    EXPECT_EQ(p.back().id, id);
+    EXPECT_EQ(p.back().value, value);
+}
+
+TEST(ClipNode, AddPhaseTrigger_DoesntSetParameterAfterLoop)
+{
+    AnimationClip clip = CreateClip();
+    clip.duration = 1.0f;
+
+    ClipNode node(clip);
+
+    float phase = 0.95f;
+    int id = 12;
+    int value = 34;
+
+    node.AddPhaseTrigger({ phase, id, value });
+
+    Parameters p;
+
+    node.Update(0.95f, p);
+
+    EXPECT_EQ(p.size(), 1);
+
+    p.clear();
+    node.Update(0.05f, p);
+
+    EXPECT_EQ(p.size(), 0);
 }
 
 TEST(BlendNode, Update_UpdatesChildNodes)
@@ -142,6 +184,8 @@ AnimationClip CreateClip()
     translationChannel.AddKey(0.0f, vec3(0));
     translationChannel.AddKey(1.0f, vec3(0, 1, 0));
     clip.translationChannels.push_back(translationChannel);
+
+    clip.duration = FLT_MAX;
 
     return clip;
 }

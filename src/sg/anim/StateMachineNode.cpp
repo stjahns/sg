@@ -2,7 +2,7 @@
 
 namespace
 {
-    bool CheckCondition(const Parameters& parameters, Condition condition)
+    bool CheckCondition(Parameters& parameters, Condition condition)
     {
         for (auto const& parameter : parameters)
         {
@@ -17,7 +17,12 @@ namespace
     }
 }
 
-void StateMachineNode::Update(float deltaTime, const Parameters& parameters)
+void StateMachineNode::Reset()
+{
+    // TODO -- reset current state or transition node? or reset to initial state?
+}
+
+void StateMachineNode::Update(float deltaTime, Parameters& parameters)
 {
     if (currentState != -1)
     {
@@ -46,7 +51,7 @@ void StateMachineNode::Evaluate(AnimationPose& pose)
     }
 }
 
-void StateMachineNode::UpdateTransition(float deltaTime, const Parameters& parameters)
+void StateMachineNode::UpdateTransition(float deltaTime, Parameters& parameters)
 {
     transitionNode->Update(deltaTime, parameters);
     transitionTimeElapsed += deltaTime;
@@ -63,7 +68,7 @@ void StateMachineNode::UpdateTransition(float deltaTime, const Parameters& param
     }
 }
 
-void StateMachineNode::CheckForNewTransition(const Parameters& parameters)
+void StateMachineNode::CheckForNewTransition(Parameters& parameters)
 {
     for (const auto& transition : transitions)
     {
@@ -81,6 +86,9 @@ void StateMachineNode::StartTransition(const Transition& transition)
     // TODO -- is this ok? are the node lifetimes appropriate?
     AnimationNode& node1 = *states[transition.sourceState];
     AnimationNode& node2 = *states[transition.destinationState];
+
+    node2.Reset();
+
     transitionNode = std::make_unique<BlendNode>(node1, node2);
     transitionNode->SetBlend(0.0f);
     transitionTimeElapsed = 0.0f;

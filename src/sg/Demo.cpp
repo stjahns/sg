@@ -99,30 +99,40 @@ void Demo::LoadBiped()
 
     LoadClipFromFile("Clips/armada.fbx", skeleton, 0, "mixamorig_");
     LoadClipFromFile("Clips/armada to esquiva.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/esquiva 1.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/esquiva 2.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/esquiva 3.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/esquiva 4.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/esquiva 5.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/ginga backward.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/ginga forward.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/ginga sideways to au.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/au.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/au to role.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/pontera.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/martelo do chau.fbx", skeleton, 0, "mixamorig_");
 
     auto entity = entityRegistry.create();
 
     entityRegistry.emplace<EntityTransform>(entity, vec3(), quat());
     entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
 
-    auto clipNode1 = std::make_unique<ClipNode>(clips[0]);
-    auto clipNode2 = std::make_unique<ClipNode>(clips[1]);
-
     auto stateMachineNode = std::make_unique<StateMachineNode>();
 
-    stateMachineNode->AddState(std::move(clipNode1));
-    stateMachineNode->AddState(std::move(clipNode2));
+    const int ParameterId = 1;
+    const int TriggerValue = 1;
 
+    for (int i = 0; i < clips.size(); ++i)
     {
-        Condition condition{ 1, 0 };
-        Transition transition{ 1, 0, 1.0f, condition };
-        stateMachineNode->AddTransition(transition);
-    }
+        auto clipNode = std::make_unique<ClipNode>(clips[i]);
+        clipNode->AddPhaseTrigger({ 0.95f, ParameterId, TriggerValue });
+        stateMachineNode->AddState(std::move(clipNode));
 
-    {
-        Condition condition{ 1, 1 };
-        Transition transition{ 0, 1, 1.0f, condition };
-        stateMachineNode->AddTransition(transition);
+        {
+            Condition condition{ ParameterId, TriggerValue };
+            Transition transition{ i, (i + 1) % clips.size(), 0.25f, condition };
+            stateMachineNode->AddTransition(transition);
+        }
     }
 
     entityRegistry.emplace<AnimGraph>(entity, std::move(stateMachineNode));

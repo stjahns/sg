@@ -51,7 +51,7 @@ TEST(LoadClip, LoadsDuration)
 
 	bool result = LoadClip(*scene, skeleton, clip);
 
-	EXPECT_EQ(clip.duration, scene->mAnimations[0]->mDuration);
+	EXPECT_EQ(clip.duration, scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
 }
 
 TEST(LoadClip, LoadsPositionChannel)

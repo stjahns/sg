@@ -9,28 +9,9 @@
 #include "AnimationNode.h"
 #include "StateMachineNode.h"
 #include "TestHelpers.h"
+#include "MockNode.h"
 
 using namespace glm;
-
-namespace
-{
-    struct MockNode : public AnimationNode
-    {
-        MockNode() : deltaTime(0.0f) {}
-
-        float deltaTime;
-
-        vec3 translation;
-        quat rotation;
-
-        virtual void Update(float deltaTime, const Parameters& parameters) override { this->deltaTime += deltaTime; }
-        virtual void Evaluate(AnimationPose& poseOut) override 
-        { 
-            poseOut.SetTranslation(0, translation);
-            poseOut.SetRotation(0, rotation);
-        }
-    };
-}
 
 TEST(StateMachineNode, InitialStateIsFirstStateAdded)
 {

@@ -38,7 +38,8 @@ public:
     bool InTransition() const { return transitionNode != nullptr; }
     int GetCurrentState() const { return currentState; }
 
-    virtual void Update(float deltaTime, const Parameters& parameters) override;
+    virtual void Reset() override;
+    virtual void Update(float deltaTime, Parameters& parameters) override;
     virtual void Evaluate(AnimationPose& pose) override;
 
     void AddState(std::shared_ptr<AnimationNode> state)
@@ -58,8 +59,8 @@ public:
 
 private:
 
-    void UpdateTransition(float deltaTime, const Parameters& parameters);
-    void CheckForNewTransition(const Parameters& parameters);
+    void UpdateTransition(float deltaTime, Parameters& parameters);
+    void CheckForNewTransition(Parameters& parameters);
     void StartTransition(const Transition& transition);
 
     int currentState;
