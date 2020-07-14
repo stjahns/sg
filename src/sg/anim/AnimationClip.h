@@ -21,6 +21,25 @@ struct Key
 };
 
 template<typename T>
+inline T interpolate(T a, T b, float t)
+{
+    return mix(a, b, t);
+}
+
+template<>
+inline quat interpolate(quat a, quat b, float t)
+{
+    if (dot(a, b) < 0.0f)
+    {
+        return mix(a, -b, t);
+    }
+    else
+    {
+        return mix(a, b, t);
+    }
+}
+
+template<typename T>
 class Channel
 {
 public:
@@ -39,7 +58,28 @@ public:
     {
     }
 
-    T Evaulate(float time) const;
+    T Evaluate(float time) const
+    {
+        if (keys.size() == 0)
+        {
+            return T();
+        }
+        if (keys.size() == 1)
+        {
+            return keys[0].value;
+        }
+        else
+        {
+            int index = int((time - startTime) * keys.size() / duration);
+            index = clamp<int>(index, 0, keys.size() - 2);
+
+            const Key<T>& key1 = keys[index];
+            const Key<T>& key2 = keys[index + 1];
+
+            float t = (time - key1.time) / (key2.time - key1.time);
+            return interpolate(key1.value, key2.value, t);
+        }
+    }
 
     T EvaluateVariableSampleRate(float time) const
     {
@@ -57,7 +97,7 @@ public:
                 if (key1.time <= time && key2.time >= time)
                 {
                     float t = (time - key1.time) / (key2.time - key1.time);
-                    return mix(key1.value, key2.value, t);
+                    return interpolate(key1.value, key2.value, t);
                 }
             }
         }
@@ -134,8 +174,6 @@ class AnimationClip
 {
 public:
 
-    void EvaulatePose(const Skeleton& skeleton, float time, Pose& pose) const;
-
     std::vector<TranslationChannel> translationChannels;
     std::vector<RotationChannel> rotationChannels;
 
@@ -207,4 +245,3 @@ public:
         }
     }
 };
-

@@ -12,6 +12,7 @@
 
 #include <assimp/postprocess.h>
 #include <tiny_gltf.h>
+#include "ShaderProgram.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -43,22 +44,25 @@ void Model::LoadSkin(const tinygltf::Model& gltfSource)
 
 	tinygltf::Skin skin = gltfSource.skins.front();
 
-	std::vector<Vertex>& vertices = m_meshes[0].vertices;
-
-	const int jointsAccessorIndex = gltfSource.meshes[0].primitives[0].attributes.at("JOINTS_0");
-	const int weightsAccessorIndex = gltfSource.meshes[0].primitives[0].attributes.at("WEIGHTS_0");
-
-    std::vector<glm::i16vec4> skinIndices;
-	CopyBuffer(gltfSource, jointsAccessorIndex, skinIndices);
-
-    std::vector<glm::vec4> skinWeights;
-	CopyBuffer(gltfSource, weightsAccessorIndex, skinWeights);
-
-	for (int vertexIndex = 0; vertexIndex < vertices.size(); ++vertexIndex)
+	for (int i = 0; i < gltfSource.meshes.size(); ++i)
 	{
-		Vertex& vertex = vertices[vertexIndex];
-		vertex.skinIndex = skinIndices[vertexIndex];
-        vertex.skinWeight = skinWeights[vertexIndex];
+        std::vector<Vertex>& vertices = m_meshes[i].vertices;
+
+        const int jointsAccessorIndex = gltfSource.meshes[i].primitives[0].attributes.at("JOINTS_0");
+        const int weightsAccessorIndex = gltfSource.meshes[i].primitives[0].attributes.at("WEIGHTS_0");
+
+        std::vector<glm::i16vec4> skinIndices;
+        CopyBuffer(gltfSource, jointsAccessorIndex, skinIndices);
+
+        std::vector<glm::vec4> skinWeights;
+        CopyBuffer(gltfSource, weightsAccessorIndex, skinWeights);
+
+        for (int vertexIndex = 0; vertexIndex < vertices.size(); ++vertexIndex)
+        {
+            Vertex& vertex = vertices[vertexIndex];
+			vertex.skinIndex = skinIndices[vertexIndex];
+            vertex.skinWeight = skinWeights[vertexIndex];
+        }
 	}
 }
 
@@ -253,11 +257,6 @@ void Model::Load()
 
 	float fScale = 1.0f;
 
-	if (aiNode* pNode = pScene->mRootNode)
-	{
-		fScale = pNode->mTransformation.a1;
-	}
-
 	for (int i = 0; i < pScene->mNumMeshes; ++i)
 	{
 		LoadMesh(pScene->mMeshes[i], fScale);
@@ -274,6 +273,13 @@ void Model::Load()
 			material.normalTexture = LoadTexture(pMaterial, aiTextureType_NORMALS);
 
 			material.specularTexture = LoadTexture(pMaterial, aiTextureType_SPECULAR);
+
+			aiColor3D color(1.0f, 1.0f, 1.0f);
+			pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+
+			material.colorFactor.r = color.r;
+			material.colorFactor.g = color.g;
+			material.colorFactor.b = color.b;
 
 			m_materials.push_back(material);
 		}
@@ -302,7 +308,7 @@ void Mesh::Draw()
 {
 }
 
-void Model::Draw()
+void Model::Draw(ShaderProgram* shader)
 {
 	if (!IsBound())
 	{
@@ -348,6 +354,8 @@ void Model::Draw()
 		{
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+
+		if (shader) shader->SetUniform("colorFactor", mat.colorFactor);
 		
 		glDrawElements(GL_TRIANGLES, mesh.indices.size(), GL_UNSIGNED_INT, 0);
 	}

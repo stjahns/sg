@@ -71,7 +71,7 @@ TEST(AssimpVsGLTF, Simple_InverseBindPosesMatch)
 
     for (int i = 0; i < gltfSkeleton.bones.size(); ++i)
     {
-        EXPECT_MAT4_EQ(gltfSkeleton.bones[i].inverseBindPose, assimpSkeleton.bones[i].inverseBindPose);
+        EXPECT_MAT4_NEAR(gltfSkeleton.bones[i].inverseBindPose, assimpSkeleton.bones[i].inverseBindPose, 0.001f);
     }
 }
 

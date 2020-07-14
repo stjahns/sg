@@ -532,7 +532,7 @@ void Renderer::PrepareForwardRenderModelBatch(Scene& scene, Model& model, Shader
 void Renderer::ForwardRenderModel(Model& model, ShaderProgram& activeShader, const mat4& transform)
 {
     activeShader.SetUniform("model", transform);
-    model.Draw();
+    model.Draw(&activeShader);
 }
 
 void Renderer::RenderPointLightShadowMaps(Scene& scene)

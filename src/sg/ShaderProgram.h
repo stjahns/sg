@@ -100,6 +100,12 @@ public:
 		glUniform3fv(uniform, 1, &vec[0]);
 	}
 
+	void SetUniform(const char* id, glm::vec4 vec)
+	{
+		GLuint uniform = glGetUniformLocation(GetHandle(), id);
+		glUniform4fv(uniform, 1, &vec[0]);
+	}
+
 	void SetUniform(const char* id, glm::vec2 vec)
 	{
 		GLuint uniform = glGetUniformLocation(GetHandle(), id);

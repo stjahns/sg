@@ -22,7 +22,7 @@ TEST(PositionChannelTests, NoKeys_DefaultValue)
 {
 	TranslationChannel channel;
 
-	vec3 v = channel.Evaulate(1.0f);
+	vec3 v = channel.Evaluate(1.0f);
 
 	EXPECT_VEC3_EQ(v, vec3());
 }
@@ -35,7 +35,7 @@ TEST(PositionChannelTests, OneKey)
 
 	channel.AddKey(0.0f, expected);
 
-	vec3 v = channel.Evaulate(1.0f);
+	vec3 v = channel.Evaluate(1.0f);
 
 	EXPECT_VEC3_EQ(v, expected);
 }
@@ -47,8 +47,8 @@ TEST(PositionChannelTests, TwoKeys)
 	channel.AddKey(0.0f, vec3(0));
 	channel.AddKey(1.0f, vec3(1));
 
-	EXPECT_VEC3_EQ(channel.Evaulate(0.0f), vec3(0));
-	EXPECT_VEC3_EQ(channel.Evaulate(1.0f), vec3(1));
+	EXPECT_VEC3_EQ(channel.Evaluate(0.0f), vec3(0));
+	EXPECT_VEC3_EQ(channel.Evaluate(1.0f), vec3(1));
 }
 
 TEST(PositionChannelTests, TwoKeys_Interpolates)
@@ -58,7 +58,7 @@ TEST(PositionChannelTests, TwoKeys_Interpolates)
 	channel.AddKey(0.0f, vec3(0));
 	channel.AddKey(1.0f, vec3(1));
 
-	EXPECT_VEC3_EQ(channel.Evaulate(0.5f), vec3(0.5));
+	EXPECT_VEC3_EQ(channel.Evaluate(0.5f), vec3(0.5));
 }
 
 TEST(PositionChannelTests, ThreeKeys_ConstantSampleRate_Interpolates)
@@ -69,8 +69,8 @@ TEST(PositionChannelTests, ThreeKeys_ConstantSampleRate_Interpolates)
 	channel.AddKey(10.0f, vec3(0.0f));
 	channel.AddKey(20.0f, vec3(10.0f));
 
-	EXPECT_VEC3_EQ(channel.Evaulate(5.0f), vec3(0.5f));
-	EXPECT_VEC3_EQ(channel.Evaulate(15.0f), vec3(5.0f));
+	EXPECT_VEC3_EQ(channel.Evaluate(5.0f), vec3(0.5f));
+	EXPECT_VEC3_EQ(channel.Evaluate(15.0f), vec3(5.0f));
 }
 
 TEST(PositionChannelTests, TenKeys_VariableSampleRate_Interpolates)
@@ -90,15 +90,15 @@ TEST(PositionChannelTests, TenKeys_VariableSampleRate_Interpolates)
 
 	channel.Resample();
 
-	EXPECT_VEC3_EQ(channel.Evaulate(4.5f), vec3(0.5f));
-	EXPECT_VEC3_EQ(channel.Evaulate(20.0f), vec3(5.0f));
+	EXPECT_VEC3_EQ(channel.Evaluate(4.5f), vec3(0.5f));
+	EXPECT_VEC3_EQ(channel.Evaluate(20.0f), vec3(5.0f));
 }
 
 TEST(RotationChannelTests, NoKeys_DefaultValue)
 {
 	TranslationChannel channel;
 
-	quat q = channel.Evaulate(1.0f);
+	quat q = channel.Evaluate(1.0f);
 
 	EXPECT_QUAT_EQ(q, quat());
 }
@@ -111,7 +111,7 @@ TEST(RotationChannelTests, OneKey)
 
 	channel.AddKey(0.0f, expected);
 
-	quat q = channel.Evaulate(1.0f);
+	quat q = channel.Evaluate(1.0f);
 
 	EXPECT_QUAT_EQ(q, expected);
 }
@@ -126,8 +126,8 @@ TEST(RotationChannelTests, TwoKeys)
 	channel.AddKey(0.0f, qStart);
 	channel.AddKey(1.0f, qEnd);
 
-	EXPECT_QUAT_EQ(channel.Evaulate(0.0f), qStart);
-	EXPECT_QUAT_EQ(channel.Evaulate(1.0f), qEnd);
+	EXPECT_QUAT_EQ(channel.Evaluate(0.0f), qStart);
+	EXPECT_QUAT_EQ(channel.Evaluate(1.0f), qEnd);
 }
 
 TEST(RotationChannelTests, TwoKeys_Interpolates)
@@ -140,7 +140,7 @@ TEST(RotationChannelTests, TwoKeys_Interpolates)
 	channel.AddKey(0.0f, qStart);
 	channel.AddKey(1.0f, qEnd);
 
-	EXPECT_QUAT_EQ(channel.Evaulate(0.5f), quat(vec3(0.5, 0, 0)));
+	EXPECT_QUAT_EQ(channel.Evaluate(0.5f), quat(vec3(0.5, 0, 0)));
 }
 
 TEST(RotationChannelTests, ThreeKeys_ConstantSampleRate_Interpolates)
@@ -152,9 +152,9 @@ TEST(RotationChannelTests, ThreeKeys_ConstantSampleRate_Interpolates)
     channel.AddKey(10.0f, quat(vec3(0, 0, 0)));
 	channel.AddKey(20.0f, quat(vec3(2, 0, 0)));
 
-	EXPECT_QUAT_EQ(channel.Evaulate(5.0f), quat(vec3(0.0, 0.5, 0)));
-	EXPECT_QUAT_EQ(channel.Evaulate(15.0f), quat(vec3(1.0, 0, 0)));
-	EXPECT_QUAT_EQ(channel.Evaulate(20.0f), quat(vec3(2.0, 0, 0)));
+	EXPECT_QUAT_EQ(channel.Evaluate(5.0f), quat(vec3(0.0, 0.5, 0)));
+	EXPECT_QUAT_EQ(channel.Evaluate(15.0f), quat(vec3(1.0, 0, 0)));
+	EXPECT_QUAT_EQ(channel.Evaluate(20.0f), quat(vec3(2.0, 0, 0)));
 }
 
 TEST(RotationChannelTests, TenKeys_VariableSampleRate_Interpolates)
@@ -174,7 +174,7 @@ TEST(RotationChannelTests, TenKeys_VariableSampleRate_Interpolates)
 
 	channel.Resample();
 
-	EXPECT_QUAT_EQ(channel.Evaulate(4.5f), quat(vec3(0.0, 0.5, 0)));
-	EXPECT_QUAT_EQ(channel.Evaulate(20.0f), quat(vec3(1.0, 0, 0)));
-	EXPECT_QUAT_EQ(channel.Evaulate(30.0f), quat(vec3(2.0, 0, 0)));
+	EXPECT_QUAT_EQ(channel.Evaluate(4.5f), quat(vec3(0.0, 0.5, 0)));
+	EXPECT_QUAT_EQ(channel.Evaluate(20.0f), quat(vec3(1.0, 0, 0)));
+	EXPECT_QUAT_EQ(channel.Evaluate(30.0f), quat(vec3(2.0, 0, 0)));
 }

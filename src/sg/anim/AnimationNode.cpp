@@ -6,7 +6,7 @@ void ClipNode::Evaluate(AnimationPose& pose)
 {
     for (const auto& channel : clip.rotationChannels)
     {
-        quat value = channel.Evaulate(time);
+        quat value = channel.Evaluate(time);
         pose.SetRotation(channel.GetTarget(), value);
     }
 
@@ -14,7 +14,7 @@ void ClipNode::Evaluate(AnimationPose& pose)
     // Can/should we avoid blending translations that are just the default bind pose (profile!)
     for (const auto& channel : clip.translationChannels)
     {
-        vec3 value = channel.Evaulate(time);
+        vec3 value = channel.Evaluate(time);
         pose.SetTranslation(channel.GetTarget(), value);
     }
 }

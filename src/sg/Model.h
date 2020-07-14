@@ -10,6 +10,7 @@
 #include "assimp/scene.h"
 
 struct aiMesh;
+class ShaderProgram;
 
 namespace tinygltf
 {
@@ -31,8 +32,11 @@ struct Material
 		: diffuseTexture(-1)
 		, normalTexture(-1)
 		, specularTexture(-1)
+		, colorFactor(1.0f)
 	{
 	}
+
+	glm::vec3 colorFactor;
 
 	int diffuseTexture;
 	int normalTexture;
@@ -70,7 +74,7 @@ public:
 
 	Model(const char *filename);
 
-	void Draw();
+	void Draw(ShaderProgram* shader = nullptr);
 	void Load();
 
 	int LoadTexture(aiMaterial* pMaterial, aiTextureType type);

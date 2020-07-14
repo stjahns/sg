@@ -63,6 +63,7 @@ class Demo
         float timescale;
 
         bool drawWireframe;
+        bool drawSkeleton;
         
         std::vector<std::string> skinUniformIds;
 

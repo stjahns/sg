@@ -69,9 +69,14 @@ bool LoadSkeleton(const aiScene& scene, Skeleton& skeleton)
 
 	skeleton.bindPose.ComputeObjectFromLocal(skeleton);
 
+	// TODO -- should keep walking parents until reaching scene root, but this works fine for the mixamo rig
+    const aiBone& rootBone = *mesh.mBones[0];
+    const aiNode* rootNode = root.FindNode(rootBone.mName);
+    mat4 rootParent = ConvertToMat4(rootNode->mParent->mTransformation);
+
 	for (int i = 0; i < skeleton.bones.size(); ++i)
 	{
-		skeleton.bones[i].inverseBindPose = inverse(skeleton.bindPose.objectTransforms[i]);
+		skeleton.bones[i].inverseBindPose = inverse(rootParent * skeleton.bindPose.objectTransforms[i]);
 	}
 
     skeleton.currentPose.localTransforms.resize(skeleton.bindPose.localTransforms.size());

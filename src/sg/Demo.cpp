@@ -40,21 +40,22 @@ typedef vec3 Velocity;
 
 Demo::Demo(GLFWWindow& window) 
     : window(window)
-    , shaderProgram("shaders/skinned.vs.glsl", "shaders/fox.fs.glsl")
+    , shaderProgram("shaders/skinned.vs.glsl", "shaders/mixamo.fs.glsl")
     , drawWireframe(false)
+    , drawSkeleton(false)
     , p1(0.0f)
     , time(glfwGetTime())
     , timescale(1.0f)
 {
     window.AddMouseEventHandler([&](MouseEvent e) { scene.GetCamera().OnMouseEvent(e); });
-    //LoadBiped();
-    LoadFox();
+    LoadBiped();
+    //LoadFox();
 }
+
 
 void Demo::LoadSkeletonFromFile(std::string filename, Skeleton& skeleton)
 {
     const std::string path = GetAssetPath(filename);
-
     Assimp::Importer importer;
     const aiScene* assimpScene = importer.ReadFile(path, 0);
     if (assimpScene)
@@ -90,6 +91,14 @@ void Demo::LoadClipFromFile(std::string filename, Skeleton& skeleton, int clipIn
 
 void Demo::LoadBiped()
 {
+    // TODO -- put em on a floor
+    // TODO -- add better lighting! (deferred render w/ color material?)
+    // TODO -- cleanup!
+
+    Model& model = models.emplace_back("Models/ybot/ybot.gltf");
+    model.Load();
+
+    scene.GetDirectionalLight().ambient = vec3(0.4f, 0.4f, 0.4f);
     LoadSkeletonFromFile("Models/ybot/ybot.gltf", skeleton);
 
     skeleton.AddRootMotionBone();
@@ -104,6 +113,10 @@ void Demo::LoadBiped()
 
     LoadClipFromFile("Clips/armada.fbx", skeleton, 0, "mixamorig_");
     LoadClipFromFile("Clips/armada to esquiva.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/ginga sideways to au.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/au.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/au to role.fbx", skeleton, 0, "mixamorig_");
+    /*
     LoadClipFromFile("Clips/esquiva 1.fbx", skeleton, 0, "mixamorig_");
     LoadClipFromFile("Clips/esquiva 2.fbx", skeleton, 0, "mixamorig_");
     LoadClipFromFile("Clips/esquiva 3.fbx", skeleton, 0, "mixamorig_");
@@ -116,60 +129,69 @@ void Demo::LoadBiped()
     LoadClipFromFile("Clips/au to role.fbx", skeleton, 0, "mixamorig_");
     LoadClipFromFile("Clips/pontera.fbx", skeleton, 0, "mixamorig_");
     LoadClipFromFile("Clips/martelo do chau.fbx", skeleton, 0, "mixamorig_");
+    */
 
-    auto entity = entityRegistry.create();
+    float spacing = 100.0f;
 
-    entityRegistry.emplace<EntityTransform>(entity, vec3(), quat());
-    entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
-
-    auto stateMachineNode = std::make_unique<StateMachineNode>();
-
-    const int ParameterId = 1;
-    const int TriggerValue = 1;
-
-    for (int i = 0; i < clips.size(); ++i)
+    for (int i = 0; i < 10; ++i)
     {
-        auto clipNode = std::make_unique<ClipNode>(clips[i]);
-        clipNode->AddPhaseTrigger({ 0.95f, ParameterId, TriggerValue });
-        stateMachineNode->AddState(std::move(clipNode));
-
+        for (int j = 0; j < 10; ++j)
         {
-            Condition condition{ ParameterId, TriggerValue };
-            Transition transition{ i, (i + 1) % clips.size(), 0.25f, condition };
-            stateMachineNode->AddTransition(transition);
+            auto entity = entityRegistry.create();
+
+            float heading = glm::linearRand(0.0f, two_pi<float>());
+            entityRegistry.emplace<EntityTransform>(entity, vec3(-i * spacing, 0.0f, -j * spacing), quat(vec3(0.0f, heading, 0.0f)));
+
+            entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
+            entityRegistry.emplace<EntityModel>(entity, 0);
+
+            auto stateMachineNode = std::make_unique<StateMachineNode>();
+
+            const int ParameterId = 1;
+            const int TriggerValue = 1;
+
+            int rand = glm::linearRand(0, int(clips.size() - 1));
+
+            for (int k = 0; k < clips.size(); ++k)
+            {
+                int clipIndex = (k + rand) % clips.size();
+
+                auto clipNode = std::make_unique<ClipNode>(clips[clipIndex]);
+                clipNode->AddPhaseTrigger({ 0.80f, ParameterId, TriggerValue });
+                stateMachineNode->AddState(std::move(clipNode));
+
+                {
+                    Condition condition{ ParameterId, TriggerValue };
+                    Transition transition{ clipIndex, (clipIndex + 1) % clips.size(), 0.50f, condition };
+                    stateMachineNode->AddTransition(transition);
+                }
+            }
+
+            stateMachineNode->Update(glm::linearRand(0.0f, 10.0f), Parameters());
+
+            entityRegistry.emplace<AnimGraph>(entity, std::move(stateMachineNode));
+
         }
     }
-
-    entityRegistry.emplace<AnimGraph>(entity, std::move(stateMachineNode));
-
-    Model& model = models.emplace_back("Models/ybot/ybot.gltf");
-    model.Load();
-
-    entityRegistry.emplace<EntityModel>(entity, 0);
 }
 
 void Demo::LoadFox()
 {
     timescale = 1000.0f;
 
+
     const std::string filename = "Models/Fox/gLTF/Fox.gltf";
     const std::string assetPath = GetAssetPath(filename);
 
-    Assimp::Importer importer;
-    const aiScene* assimpScene = importer.ReadFile(assetPath, 0);
-    if (assimpScene)
-    {
-        LoadSkeleton(*assimpScene, skeleton);
-    }
-
-    LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 0);
-    LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 1);
-    LoadClipFromFile("Models/Fox/gLTF/Fox.gltf", skeleton, 2);
+    LoadSkeletonFromFile(filename, skeleton);
+    LoadClipFromFile(filename, skeleton, 0);
+    LoadClipFromFile(filename, skeleton, 1);
+    LoadClipFromFile(filename, skeleton, 2);
 
     Model& model = models.emplace_back(filename.c_str());
     model.Load();
 
-    float spacing = 200.0f;
+    float spacing = 100.0f;
 
     for (int i = 0; i < skeleton.bones.size(); ++i)
     {
@@ -348,12 +370,14 @@ void Demo::Update(float deltaTime)
             pose.GetTranslation(skeleton.rootMotionBone, rootMotion);
 
             rootMotion.y = 0.0f;
-            transform.position += rootMotion * deltaTime;
+            transform.position += transform.orientation * (rootMotion * deltaTime);
         }
 
-        mat4 modelTransform = transform.ToMat4();
-
-        lineRenderer.AddPose(modelTransform, skeleton, skeletonPose, vec4(1));
+        if (drawSkeleton)
+        {
+            mat4 modelTransform = transform.ToMat4();
+            lineRenderer.AddPose(modelTransform, skeleton, skeletonPose, vec4(1));
+        }
     }
 }
 
@@ -368,6 +392,7 @@ void Demo::Widgets()
     if (ImGui::CollapsingHeader("Render", "RENDER", true, true))
     {
         ImGui::Checkbox("Wireframe", &drawWireframe);
+        ImGui::Checkbox("Skeleton", &drawSkeleton);
     }
 
     if (ImGui::CollapsingHeader("Parameters", "PARAMETERS", true, true))
