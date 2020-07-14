@@ -5,8 +5,9 @@
 
 #include "Light.h"
 #include "Model.h"
-#include "Camera.h"
 #include "ShaderProgram.h"
+
+class Camera;
 
 class Scene
 {
@@ -15,10 +16,9 @@ class Scene
 
         void AddWidgets();
 
-        void DrawLights();
+        void DrawLights(const Camera& camera);
 
-        Camera& GetCamera() { return camera; }
-
+        void AddPointLight() { numPointLights = min(maxPointLights, numPointLights + 1); }
         PointLight* GetPointLights() { return pointLights; }
         int GetNumPointLights() { return numPointLights; };
 
@@ -42,6 +42,4 @@ class Scene
         const float lightScale = 0.2f;
         Model lightModel;
         ShaderProgram lightShader;
-
-        Camera camera;
 };

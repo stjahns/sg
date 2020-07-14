@@ -51,18 +51,18 @@ public:
     }
 
     void InitGBuffer();
-    void DeferredRender(Scene& scene);
 
-    void ForwardRender(Scene& scene, ShaderProgram& activeShader);
+    void DeferredRender(Scene& scene, const Camera& camera, Model& model);
+    void ForwardRender(Scene& scene, const Camera& camera, ShaderProgram& activeShader);
 
-    void PrepareForwardRenderModelBatch(Scene& scene, Model& model, ShaderProgram& activeShader);
+    void PrepareForwardRenderModelBatch(Scene& scene, const Camera& camera, Model& model, ShaderProgram& activeShader);
     void ForwardRenderModel(Model& model, ShaderProgram& activeShader, const mat4& transform);
 
     void RenderPointLightShadowMaps(Scene& scene);
 
     void RenderDirectionalLightShadowMap(Scene& scene);
 
-    void Widgets();
+    void AddWidgets();
 
     void InitQuad();
     void DrawQuad(GLuint textureColorbuffer, vec2 min = vec2(0.0f), vec2 max = vec2(1.0f));

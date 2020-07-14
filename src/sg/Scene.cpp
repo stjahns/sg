@@ -1,6 +1,7 @@
 #include <sstream>
 
 #include "Scene.h"
+#include "Camera.h"
 
 Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 , numPointLights(0)
@@ -12,7 +13,6 @@ Scene::Scene() : lightModel("models/glTF/box/box.gltf")
 
 void Scene::AddWidgets()
 {
-    camera.Widgets();
 
     ImGui::PushID("DirectionalLight");
     if (ImGui::CollapsingHeader("Directional Light"))
@@ -98,7 +98,7 @@ void Scene::AddWidgets()
     }
 }
 
-void Scene::DrawLights()
+void Scene::DrawLights(const Camera& camera)
 {
     if (lightModel.IsLoaded() && !lightModel.IsBound())
     {

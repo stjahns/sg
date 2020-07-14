@@ -4,7 +4,7 @@
 #include <tiny_gltf.h>
 
 #include "sg/GlfwWindow.h"
-#include "sg/Demo.h"
+#include "sg/DemoProgram.h"
 
 using namespace glm;
 
@@ -18,7 +18,7 @@ int main(int /*argc*/, char** /*argv*/)
 		return EXIT_FAILURE;
 	}
 
-	Demo demo(window);
+	DemoProgram demo(window);
 
 	demo.Run();
 

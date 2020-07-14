@@ -8,7 +8,7 @@ float lerp(float a, float b, float f)
     return a + f * (b - a);
 }
 
-void Renderer::Widgets()
+void Renderer::AddWidgets()
 {
     ImGui::Checkbox("Draw G Buffer", &drawGBuffer);
     ImGui::Checkbox("Draw HDR Buffer", &drawHDRBuffer);
@@ -172,7 +172,7 @@ void Renderer::InitGBuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::DeferredRender(Scene& scene)
+void Renderer::DeferredRender(Scene& scene, const Camera& camera, Model& model) // TODO -- split this up
 {
     glBindFramebuffer(GL_FRAMEBUFFER, gBufferFBO);
 
@@ -181,30 +181,25 @@ void Renderer::DeferredRender(Scene& scene)
 
     geometryPassShader.Use();
 
-    geometryPassShader.SetUniform("view", scene.GetCamera().GetViewMatrix());
-    geometryPassShader.SetUniform("projection", scene.GetCamera().GetProjection());
+    geometryPassShader.SetUniform("view", camera.GetViewMatrix());
+    geometryPassShader.SetUniform("projection", camera.GetProjection());
 
     geometryPassShader.SetUniformi("material.diffuse", 0);
     geometryPassShader.SetUniformi("material.normal", 2);
 
-    /*
-    for (Model* model : scene.GetModels())
+    if (model.IsLoaded() && !model.IsBound())
     {
-        if (model->IsLoaded() && !model->IsBound())
-        {
-            model->Bind();
-        }
-
-        if (model->IsBound())
-        {
-            mat4 mvp = scene.GetCamera().GetProjection() * scene.GetCamera().GetViewMatrix() * model->GetTransform();
-            geometryPassShader.SetUniform("model", model->GetTransform());
-            geometryPassShader.SetUniform("MVP", mvp);
-            model->Draw();
-            glCheckError();
-        }
+        model.Bind();
     }
-    */
+
+    if (model.IsBound())
+    {
+        mat4 mvp = camera.GetProjection() * camera.GetViewMatrix() * model.GetTransform();
+        geometryPassShader.SetUniform("model", model.GetTransform());
+        geometryPassShader.SetUniform("MVP", mvp);
+        model.Draw();
+        glCheckError();
+    }
 
     if (ssaoEnabled)
     {
@@ -219,8 +214,8 @@ void Renderer::DeferredRender(Scene& scene)
         ssaoShader.SetUniformi("gPositionBuffer", 0);
         ssaoShader.SetUniformi("gNormalBuffer", 1);
         ssaoShader.SetUniformi("texNoise", 2);
-        ssaoShader.SetUniform("view", scene.GetCamera().GetViewMatrix());
-        ssaoShader.SetUniform("projection", scene.GetCamera().GetProjection());
+        ssaoShader.SetUniform("view", camera.GetViewMatrix());
+        ssaoShader.SetUniform("projection", camera.GetProjection());
 
         ssaoShader.SetUniformi("kernelSize", ssaoKernelSize);
         ssaoShader.SetUniform("radius", ssaoRadius);
@@ -303,7 +298,7 @@ void Renderer::DeferredRender(Scene& scene)
     deferredShadingPassShader.SetUniformi("gAlbedoSpecBuffer", 2);
     deferredShadingPassShader.SetUniformi("ssaoBuffer", 8);
 
-    deferredShadingPassShader.SetUniform("uViewPos", scene.GetCamera().GetPosition());
+    deferredShadingPassShader.SetUniform("uViewPos", camera.GetPosition());
 
     deferredShadingPassShader.SetUniform("uDirectionalLight.ambient", scene.GetDirectionalLight().ambient);
     deferredShadingPassShader.SetUniform("uDirectionalLight.diffuse", scene.GetDirectionalLight().diffuse);
@@ -395,13 +390,13 @@ void Renderer::DeferredRender(Scene& scene)
 }
 
 
-void Renderer::ForwardRender(Scene& scene, ShaderProgram& activeShader)
+void Renderer::ForwardRender(Scene& scene, const Camera& camera, ShaderProgram& activeShader)
 {
     PointLight* pointLights = scene.GetPointLights();
     SpotLight* spotLights = scene.GetSpotLights();
 
-    glm::mat4 view = scene.GetCamera().GetViewMatrix();
-    glm::mat4 projection = scene.GetCamera().GetProjection();
+    glm::mat4 view = camera.GetViewMatrix();
+    glm::mat4 projection = camera.GetProjection();
 
     glActiveTexture(GL_TEXTURE3);
 
@@ -449,10 +444,10 @@ void Renderer::ForwardRender(Scene& scene, ShaderProgram& activeShader)
     */
 }
 
-void Renderer::PrepareForwardRenderModelBatch(Scene& scene, Model& model, ShaderProgram& activeShader)
+void Renderer::PrepareForwardRenderModelBatch(Scene& scene, const Camera& camera, Model& model, ShaderProgram& activeShader)
 {
-    glm::mat4 view = scene.GetCamera().GetViewMatrix();
-    glm::mat4 projection = scene.GetCamera().GetProjection();
+    glm::mat4 view = camera.GetViewMatrix();
+    glm::mat4 projection = camera.GetProjection();
     DirectionalLight& directionalLight = scene.GetDirectionalLight();
     PointLight* pointLights = scene.GetPointLights();
     SpotLight* spotLights = scene.GetSpotLights();
@@ -525,7 +520,7 @@ void Renderer::PrepareForwardRenderModelBatch(Scene& scene, Model& model, Shader
             activeShader.SetUniform((id.str() + ".outercutoff").c_str(), spotLights[i].outerCutOff);
         }
 
-        activeShader.SetUniform("viewPos", scene.GetCamera().GetPosition());
+        activeShader.SetUniform("viewPos", camera.GetPosition());
     }
 }
 

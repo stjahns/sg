@@ -43,7 +43,7 @@ public:
 		}
 	}
 
-	void Widgets()
+	void AddWidgets()
 	{
 		if (ImGui::CollapsingHeader("Camera"))
 		{
@@ -112,7 +112,7 @@ public:
 		m_View = ComputeViewMatrix();
 	}
 
-	mat4 GetMatrix()
+	mat4 GetMatrix() const
 	{
 		mat4 m(1.0);
 		m = translate(m, m_Position);
@@ -122,7 +122,7 @@ public:
 		return m;
 	}
 
-	mat4 GetViewMatrix()
+	mat4 GetViewMatrix() const
 	{
 		return m_View;
 	}
@@ -138,12 +138,12 @@ public:
 		m_Position = p;
 	}
 
-	vec3 GetPosition()
+	vec3 GetPosition() const
 	{
 		return m_Position;
 	}
 
-	mat4 GetProjection()
+	mat4 GetProjection() const
 	{
 		return m_Projection;
 	}
@@ -151,6 +151,11 @@ public:
 	void SetProjection(mat4 projection)
 	{
 		m_Projection = projection;
+	}
+
+	void SetSpeed(float speed)
+	{
+		fCameraSpeed = speed;
 	}
 
 private:
