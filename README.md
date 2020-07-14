@@ -6,8 +6,7 @@ A collection of tech experiments haphazardly packed together.
 
 Animation graphs with clip, blend, and state machine nodes
 
-![25x25 independently animating characters](https://raw.githubusercontent.com/stjahns/sg/readme/doc/625_characters.png)
-
+[![25x25 independently animating characters](https://img.youtube.com/vi/u9ZVJmrmSu0/0.jpg)](https://www.youtube.com/watch?v=u9ZVJmrmSu0)
 
 ## Deferred shading
 
