@@ -22,13 +22,13 @@ struct MouseEvent
 
 typedef std::function<void(MouseEvent)> MouseEventHandler;
 
-class GLFWWindow
+class Window
 {
 public:
 
-    GLFWWindow(int width, int height);
+    Window(int width, int height);
 
-    ~GLFWWindow();
+    ~Window();
 
     bool Valid() { return window != nullptr; }
     bool ShouldClose() { return glfwWindowShouldClose(window); }
@@ -75,7 +75,8 @@ private:
 
     GLFWwindow* window;
 
-    static GLFWWindow* instance;
+    static Window* instance;
 
     static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+    static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 };

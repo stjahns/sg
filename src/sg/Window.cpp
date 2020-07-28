@@ -1,9 +1,9 @@
-#include "GlfwWindow.h"
+#include "Window.h"
 
 #include <imgui.h>
 #include "imgui_impl_glfw_glad.h"
 
-GLFWWindow::GLFWWindow(int width, int height)
+Window::Window(int width, int height)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -26,22 +26,23 @@ GLFWWindow::GLFWWindow(int width, int height)
         ImGui_ImplGlfwGlad_Init(window, true);
 
         glfwSetMouseButtonCallback(window, MouseButtonCallback);
+        glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
     }
 }
 
-GLFWWindow::~GLFWWindow()
+Window::~Window()
 {
     ImGui_ImplGlfwGlad_Shutdown();
     glfwTerminate();
 }
 
-void GLFWWindow::Update()
+void Window::Update()
 {
     glfwPollEvents();
     ImGui_ImplGlfwGlad_NewFrame();
 }
 
-void GLFWWindow::OnMouseButtonAction(GLFWwindow* window, int button, int action, int mods)
+void Window::OnMouseButtonAction(GLFWwindow* window, int button, int action, int mods)
 {
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -54,12 +55,17 @@ void GLFWWindow::OnMouseButtonAction(GLFWwindow* window, int button, int action,
     }
 }
 
-GLFWWindow* GLFWWindow::instance = nullptr;
+Window* Window::instance = nullptr;
 
-void GLFWWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void Window::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     if (instance)
     {
         instance->OnMouseButtonAction(window, button, action, mods);
     }
+}
+
+void Window::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
 }

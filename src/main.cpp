@@ -3,14 +3,14 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <tiny_gltf.h>
 
-#include "sg/GlfwWindow.h"
+#include "sg/Window.h"
 #include "sg/DemoProgram.h"
 
 using namespace glm;
 
 int main(int /*argc*/, char** /*argv*/) 
 {
-	GLFWWindow window(1280, 800);
+	Window window(1280, 800);
 
 	if (!window.Valid())
 	{

@@ -1,6 +1,6 @@
 #include "DemoProgram.h"
 
-DemoProgram::DemoProgram(GLFWWindow& window) 
+DemoProgram::DemoProgram(Window& window) 
     : window(window)
     , demo(camera)
     , elapsedTime(glfwGetTime())

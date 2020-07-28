@@ -10,7 +10,7 @@
 #include "Scene.h"
 #include "Renderer.h"
 #include "LineRenderer.h"
-#include "GlfwWindow.h"
+#include "Window.h"
 
 #include "anim/Skeleton.h"
 #include "anim/AnimationClip.h"

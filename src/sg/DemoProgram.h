@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Camera.h"
-#include "GlfwWindow.h"
+#include "Window.h"
 #include "BipedDemo.h"
 #include "SceneDemo.h"
 
@@ -9,7 +9,7 @@ class DemoProgram
 {
     public:
 
-        DemoProgram(GLFWWindow& window);
+        DemoProgram(Window& window);
 
         void Run();
 
@@ -19,11 +19,11 @@ class DemoProgram
         void Render();
         void AddWidgets();
 
-        GLFWWindow& window;
+        Window& window;
 
         Camera camera;
-        //BipedDemo demo;
-        SceneDemo demo;
+        BipedDemo demo;
+        //SceneDemo demo;
 
         double elapsedTime;
         float timescale;

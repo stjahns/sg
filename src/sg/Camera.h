@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <imgui.h>
-#include "GlfwWindow.h"
+#include "Window.h"
 
 using namespace glm;
 
@@ -57,7 +57,7 @@ public:
 
 	// TODO -- use glfwSetScrollCallback(window, scroll_callback) on OSX
 	// TODO use dT
-	void Update(GLFWWindow& window)
+	void Update(Window& window)
 	{
 		const float fRotateRateScale = 0.003f;
 		const float fTranslateRateScale = 1.500f;
