@@ -6,27 +6,31 @@
 
 #include "Model.h"
 #include "Scene.h"
-#include "Renderer.h"
+#include "DeferredRenderer.h"
+#include "OmnidirectionalShadowMapRenderer.h"
+#include "Window.h"
 
 class SceneDemo
 {
 public:
 
-    SceneDemo(Camera& camera);
+    SceneDemo(Window& window, Camera& camera);
 
     void Update(float deltaTime);
     void Render();
 
     void AddWidgets();
-    void Reload() { }
+    void Reload();
 
 private:
 
     void LoadScene();
 
     Camera& camera;
-    Renderer renderer;
+    DeferredRenderer renderer;
     Scene scene;
+
+    OmnidirectionalShadowMapRenderer shadowMapRenderer;
 
     std::vector<Model> models;
 };

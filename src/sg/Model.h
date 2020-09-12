@@ -74,7 +74,7 @@ public:
 
 	Model(const char *filename);
 
-	void Draw(ShaderProgram* shader = nullptr);
+	void Draw(ShaderProgram* shader = nullptr) const;
 	void Load();
 
 	int LoadTexture(aiMaterial* pMaterial, aiTextureType type);
@@ -86,12 +86,12 @@ public:
 	void BindMesh(Mesh& mesh);
 	void BindTexture(Texture& t);
 
-	bool IsLoaded() { return m_loaded; }
-	bool IsBound() { return m_bound; }
+	bool IsLoaded() const { return m_loaded; }
+	bool IsBound() const { return m_bound; }
 
-	const char* GetFilename() { return m_filename.c_str(); }
+	const char* GetFilename() const { return m_filename.c_str(); }
 
-	glm::mat4 GetTransform() { return transform; }
+	glm::mat4 GetTransform() const { return transform; }
 	void SetTransform(glm::mat4 t) { transform = t; }
 
 	void Widgets() 

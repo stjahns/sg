@@ -1,8 +1,9 @@
 #include "SceneDemo.h"
 #include "Light.h"
 
-SceneDemo::SceneDemo(Camera& camera)
+SceneDemo::SceneDemo(Window& window, Camera& camera)
     : camera(camera)
+    , renderer(window)
 {
     LoadScene();
 }
@@ -33,9 +34,18 @@ void SceneDemo::Update(float deltaTime)
 
 void SceneDemo::Render()
 {
-    for (auto model : models)
+    shadowMapRenderer.RenderLightMaps(scene, [&](ShaderProgram& shader)
     {
-        // FIXME - need to split up passes for this to work right
+        for (auto& model : models)
+        {
+            shader.SetUniform("model", model.GetTransform());
+            model.Draw();
+        }
+    });
+
+    // TODO -- handle this properly
+    for (auto& model : models)
+    {
         renderer.DeferredRender(scene, camera, model);
     }
 }
@@ -44,4 +54,9 @@ void SceneDemo::AddWidgets()
 {
     scene.AddWidgets();
     renderer.AddWidgets();
+}
+
+void SceneDemo::Reload()
+{
+    renderer.ReloadShaders();
 }

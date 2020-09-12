@@ -308,7 +308,7 @@ void Mesh::Draw()
 {
 }
 
-void Model::Draw(ShaderProgram* shader)
+void Model::Draw(ShaderProgram* shader) const
 {
 	if (!IsBound())
 	{
@@ -317,7 +317,7 @@ void Model::Draw(ShaderProgram* shader)
 
 	// Shared?
 
-	for (Mesh &mesh : m_meshes)
+	for (const Mesh &mesh : m_meshes)
 	{
 		glBindVertexArray(mesh.vao);
 

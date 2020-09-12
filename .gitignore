@@ -4,3 +4,4 @@ src/vendor
 out
 .vs
 CMakeSettings.json
+imgui.ini

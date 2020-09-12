@@ -21,6 +21,7 @@ struct MouseEvent
 };
 
 typedef std::function<void(MouseEvent)> MouseEventHandler;
+typedef std::function<void(int, int)> ResizeEventHandler;
 
 class Window
 {
@@ -67,11 +68,18 @@ public:
         mouseEventHandlers.push_back(handler);
     }
 
+    void AddResizeEventHandler(ResizeEventHandler handler)
+    {
+        resizeEventHandlers.push_back(handler);
+    }
+
 private:
 
-    void OnMouseButtonAction(GLFWwindow* window, int button, int action, int mods);
+    void OnMouseButtonAction(int button, int action, int mods);
+    void OnFramebufferResized(int width, int height);
 
     std::vector<MouseEventHandler> mouseEventHandlers;
+    std::vector<ResizeEventHandler> resizeEventHandlers;
 
     GLFWwindow* window;
 

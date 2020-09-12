@@ -42,7 +42,7 @@ void Window::Update()
     ImGui_ImplGlfwGlad_NewFrame();
 }
 
-void Window::OnMouseButtonAction(GLFWwindow* window, int button, int action, int mods)
+void Window::OnMouseButtonAction(int button, int action, int mods)
 {
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -55,17 +55,30 @@ void Window::OnMouseButtonAction(GLFWwindow* window, int button, int action, int
     }
 }
 
+void Window::OnFramebufferResized(int width, int height)
+{
+    for (auto& handler : resizeEventHandlers)
+    {
+        handler(width, height);
+    }
+}
+
 Window* Window::instance = nullptr;
 
 void Window::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     if (instance)
     {
-        instance->OnMouseButtonAction(window, button, action, mods);
+        instance->OnMouseButtonAction(button, action, mods);
     }
 }
 
 void Window::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+
+    if (instance)
+    {
+        instance->OnFramebufferResized(width, height);
+    }
 }

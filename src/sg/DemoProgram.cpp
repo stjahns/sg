@@ -2,7 +2,7 @@
 
 DemoProgram::DemoProgram(Window& window) 
     : window(window)
-    , demo(camera)
+    , demo(window, camera)
     , elapsedTime(glfwGetTime())
     , timescale(1.0f)
 {
