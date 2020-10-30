@@ -10,11 +10,12 @@
 #include "BipedDemo.h"
 #include "Components.h"
 
-BipedDemo::BipedDemo(Camera& camera)
+BipedDemo::BipedDemo(Window& window, Camera& camera)
     : shaderProgram("shaders/skinned.vs.glsl", "shaders/mixamo.fs.glsl")
     , camera(camera)
     , drawWireframe(false)
     , drawSkeleton(false)
+    , renderer(window)
 {
     LoadBiped();
 }
@@ -85,9 +86,9 @@ void BipedDemo::LoadBiped()
 
     float spacing = 100.0f;
 
-    for (int i = 0; i < 25; ++i)
+    for (int i = 0; i < 4; ++i)
     {
-        for (int j = 0; j < 25; ++j)
+        for (int j = 0; j < 4; ++j)
         {
             auto entity = entityRegistry.create();
 
@@ -96,6 +97,7 @@ void BipedDemo::LoadBiped()
 
             entityRegistry.emplace<Pose>(entity, skeleton.bindPose);
             entityRegistry.emplace<EntityModel>(entity, 0);
+            entityRegistry.emplace<Skeleton>(entity, skeleton);
 
             auto stateMachineNode = std::make_unique<StateMachineNode>();
 
@@ -179,41 +181,81 @@ void BipedDemo::Render()
 
     if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    auto view = entityRegistry.view<EntityTransform, EntityModel, Pose>();
-
-    if (models.size() == 1)
-    {
-        // TODO figure out how to handle batching multple models
-        renderer.PrepareForwardRenderModelBatch(scene, camera, models[0], shaderProgram);
-    }
-
-    std::vector<mat4> skinMatrices;
-    skinMatrices.resize(skeleton.bones.size());
+    auto view = entityRegistry.view<EntityTransform, EntityModel, Pose, Skeleton>();
 
     for (auto entity : view)
     {
         auto& transform = view.get<EntityTransform>(entity);
         auto& entityModel = view.get<EntityModel>(entity);
         auto& pose = view.get<Pose>(entity);
+        auto& skeleton = view.get<Skeleton>(entity);
 
         Model& model = models[entityModel.modelIndex];
 
         pose.ComputeObjectFromLocal(skeleton);
-
-        for (int i = 0; i < skeleton.bones.size(); ++i)
-        {
-            skinMatrices[i] = pose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
-        }
-
-        shaderProgram.Use();
-
-        for (int i = 0; i < skeleton.bones.size(); ++i)
-        {
-            shaderProgram.SetUniform(skinUniformIds[i].c_str(), skinMatrices[i]);
-        }
-
-        renderer.ForwardRenderModel(model, shaderProgram, transform.ToMat4());
     }
+
+    shadowMapRenderer.RenderLightMaps(scene, [&](ShaderProgram& shader)
+    {
+        for (auto entity : view)
+        {
+            auto& transform = view.get<EntityTransform>(entity);
+            auto& entityModel = view.get<EntityModel>(entity);
+            auto& pose = view.get<Pose>(entity);
+            auto& skeleton = view.get<Skeleton>(entity);
+
+            shader.SetUniform("model", transform.ToMat4());
+
+            for (int i = 0; i < skeleton.bones.size(); ++i)
+            {
+                // TODO -- these should be cached on another component?
+                mat4 skinMatrix = pose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
+                shader.SetUniform(skinUniformIds[i].c_str(), skinMatrix);
+            }
+
+            Model& model = models[entityModel.modelIndex];
+
+            if (model.IsLoaded() && !model.IsBound())
+            {
+                model.Bind();
+            }
+
+            model.Draw();
+        }
+    });
+
+    renderer.DeferredRender(scene, camera, [&](ShaderProgram& shader)
+    {
+        for (auto entity : view)
+        {
+            auto& transform = view.get<EntityTransform>(entity);
+            auto& entityModel = view.get<EntityModel>(entity);
+            auto& pose = view.get<Pose>(entity);
+            auto& skeleton = view.get<Skeleton>(entity);
+
+            mat4 mvp = camera.GetProjection() * camera.GetViewMatrix() * transform.ToMat4();
+            shader.SetUniform("model", transform.ToMat4());
+            shader.SetUniform("MVP", mvp);
+
+            for (int i = 0; i < skeleton.bones.size(); ++i)
+            {
+                // TODO -- these should be cached on another component?
+                mat4 skinMatrix = pose.objectTransforms[i] * skeleton.bones[i].inverseBindPose;
+                shader.SetUniform(skinUniformIds[i].c_str(), skinMatrix);
+            }
+
+            Model& model = models[entityModel.modelIndex];
+
+            if (model.IsLoaded() && !model.IsBound())
+            {
+                model.Bind();
+            }
+
+            model.Draw();
+        }
+    });
+
+    lineRenderer.Render(camera.GetViewMatrix(), camera.GetProjection());
 
     if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
@@ -224,6 +266,7 @@ void BipedDemo::AddWidgets()
     {
         ImGui::Checkbox("Wireframe", &drawWireframe);
         ImGui::Checkbox("Skeleton", &drawSkeleton);
+        renderer.AddWidgets();
     }
 
     scene.AddWidgets();

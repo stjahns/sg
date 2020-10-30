@@ -109,6 +109,7 @@ ShaderProgram::ShaderProgram(const char* vsSource, const char* gsSource, const c
 	Link();
 }
 
+// DANGER -- if you accidentally copy one of these and the copy goes out of scope, the program will get deleted!
 ShaderProgram::~ShaderProgram()
 {
 	glDeleteProgram(m_Handle);

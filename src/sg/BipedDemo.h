@@ -11,6 +11,8 @@
 #include "Renderer.h"
 #include "LineRenderer.h"
 #include "Window.h"
+#include "DeferredRenderer.h"
+#include "OmnidirectionalShadowMapRenderer.h"
 
 #include "anim/Skeleton.h"
 #include "anim/AnimationClip.h"
@@ -21,7 +23,7 @@ class BipedDemo
 {
 public:
 
-    BipedDemo(Camera& camera);
+    BipedDemo(Window& window, Camera& camera);
 
     void Update(float deltaTime);
     void Render();
@@ -43,7 +45,10 @@ private:
     std::vector<Model> models;
 
     Camera& camera;
-    Renderer renderer;
+
+    DeferredRenderer renderer;
+    OmnidirectionalShadowMapRenderer shadowMapRenderer;
+
     LineRenderer lineRenderer;
 
     ShaderProgram shaderProgram;

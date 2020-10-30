@@ -63,6 +63,11 @@ void LineRenderer::AddPose(const mat4& transform, const Skeleton& skeleton, cons
 
 void LineRenderer::Render(const mat4& view, const mat4& projection)
 {
+    if (vertices.size() == 0)
+    {
+        return;
+    }
+
     glBindVertexArray(vao);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

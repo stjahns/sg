@@ -43,11 +43,24 @@ void SceneDemo::Render()
         }
     });
 
-    // TODO -- handle this properly
-    for (auto& model : models)
+    renderer.DeferredRender(scene, camera, [&](ShaderProgram& shader)
     {
-        renderer.DeferredRender(scene, camera, model);
-    }
+        for (auto& model : models)
+        {
+            if (model.IsLoaded() && !model.IsBound())
+            {
+                model.Bind();
+            }
+
+            if (model.IsBound())
+            {
+                mat4 mvp = camera.GetProjection() * camera.GetViewMatrix() * model.GetTransform();
+                shader.SetUniform("model", model.GetTransform());
+                shader.SetUniform("MVP", mvp);
+                model.Draw();
+            }
+        }
+    });
 }
 
 void SceneDemo::AddWidgets()

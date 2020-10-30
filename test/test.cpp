@@ -173,6 +173,7 @@ void BuildTwoBoneTestScene(aiScene& scene)
 	mesh->mBones[1]->mOffsetMatrix.FromEulerAnglesXYZ(0, 1, 0);
 }
 
+// FIXME this seems wrong now..
 TEST(LoadSkeleton_Simple, SetsInverseBindPoses)
 {
 	aiScene scene;

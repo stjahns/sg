@@ -177,7 +177,7 @@ void DeferredRenderer::InitGBuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void DeferredRenderer::DeferredRender(Scene& scene, const Camera& camera, Model& model) // TODO -- split this up
+void DeferredRenderer::DeferredRender(Scene& scene, const Camera& camera, std::function<void(ShaderProgram&)> drawGeometry) // TODO -- split this up
 {
     glBindFramebuffer(GL_FRAMEBUFFER, gBufferFBO);
     glViewport(0, 0, framebufferWidth, framebufferHeight);
@@ -193,19 +193,7 @@ void DeferredRenderer::DeferredRender(Scene& scene, const Camera& camera, Model&
     geometryPassShader.SetUniformi("material.diffuse", 0);
     geometryPassShader.SetUniformi("material.normal", 2);
 
-    if (model.IsLoaded() && !model.IsBound())
-    {
-        model.Bind();
-    }
-
-    if (model.IsBound())
-    {
-        mat4 mvp = camera.GetProjection() * camera.GetViewMatrix() * model.GetTransform();
-        geometryPassShader.SetUniform("model", model.GetTransform());
-        geometryPassShader.SetUniform("MVP", mvp);
-        model.Draw();
-        glCheckError();
-    }
+    drawGeometry(geometryPassShader);
 
     if (ssaoEnabled)
     {

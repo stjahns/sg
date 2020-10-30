@@ -65,7 +65,7 @@ public:
 
     void InitGBuffer();
 
-    void DeferredRender(Scene& scene, const Camera& camera, Model& model);
+    void DeferredRender(Scene& scene, const Camera& camera, std::function<void(ShaderProgram&)> drawGeometry);
 
     void RenderDirectionalLightShadowMap(Scene& scene);
 
