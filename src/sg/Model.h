@@ -52,6 +52,17 @@ struct Vertex
 	glm::vec2 texcoord;
 	glm::ivec4 skinIndex;
 	glm::vec4 skinWeight;
+
+	Vertex()
+		: position(0.0f)
+		, normal(0.0f)
+		, tangent(0.0f)
+		, bitangent(0.0f)
+		, texcoord(0.0f)
+		, skinIndex(0)
+		, skinWeight(0.0f)
+	{
+	}
 };
 
 struct Mesh

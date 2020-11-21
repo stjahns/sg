@@ -36,7 +36,7 @@ TEST(ClipNode, AppliesPose_0s)
     EXPECT_TRUE(pose.GetTranslation(1, translation));
     EXPECT_TRUE(pose.GetRotation(1, rotation));
 
-    EXPECT_QUAT_EQ(rotation, quat());
+    EXPECT_QUAT_EQ(rotation, quat(1.0f, 0.0f, 0.0f, 0.0f));
     EXPECT_VEC3_EQ(translation, vec3());
 }
 

@@ -47,8 +47,8 @@ class Skeleton
         {
             rootMotionBone = BoneIndex(bones.size());
             bones.push_back(Bone("rootMotion", BoneIndex(0)));
-            bindPose.localTransforms.push_back(mat4());
-            currentPose.localTransforms.push_back(mat4());
+            bindPose.localTransforms.push_back(mat4(1.0f));
+            currentPose.localTransforms.push_back(mat4(1.0f));
         }
 
         BoneIndex rootMotionBone;

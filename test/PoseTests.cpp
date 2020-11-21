@@ -19,17 +19,17 @@ using namespace glm;
 
 TEST(MatrixTests, Test1)
 {
-    mat4 m1 = translate(mat4(), vec3(1, 0, 0));
-    mat4 m2 = translate(mat4(), vec3(2, 0, 0));
+    mat4 m1 = translate(mat4(1.0f), vec3(1, 0, 0));
+    mat4 m2 = translate(mat4(1.0f), vec3(2, 0, 0));
     mat4 result = m1 * m2;
-    mat4 expected = translate(mat4(), vec3(3, 0, 0));
+    mat4 expected = translate(mat4(1.0f), vec3(3, 0, 0));
     EXPECT_MAT4_EQ(result, expected);
 }
 
 TEST(MatrixTests, Test2)
 {
-    mat4 m1 = translate(mat4(), vec3(1, 0, 0));
-    mat4 m2 = rotate(mat4(), pi<float>(), vec3(0, 1, 0));
+    mat4 m1 = translate(mat4(1), vec3(1, 0, 0));
+    mat4 m2 = rotate(mat4(1), pi<float>(), vec3(0, 1, 0));
 
     vec3 result = (m1 * m2) * vec4(0, 0, 0, 1);
     vec3 expected = vec3(1, 0, 0);
@@ -39,8 +39,8 @@ TEST(MatrixTests, Test2)
 
 TEST(MatrixTests, Test3)
 {
-    mat4 m1 = translate(mat4(), vec3(1, 0, 0));
-    mat4 m2 = rotate(mat4(), pi<float>(), vec3(0, 1, 0));
+    mat4 m1 = translate(mat4(1.0f), vec3(1, 0, 0));
+    mat4 m2 = rotate(mat4(1.0f), pi<float>(), vec3(0, 1, 0));
 
     vec3 result = (m2 * m1) * vec4(0, 0, 0, 1);
     vec3 expected = vec3(-1, 0, 0);
@@ -58,14 +58,14 @@ TEST(PoseTests, ComputeObjectFromLocal_SingleChain1)
 
     Pose pose;
     pose.localTransforms.resize(3);
-    pose.localTransforms[0] = translate(mat4(), vec3(1));
-    pose.localTransforms[1] = rotate(mat4(), pi<float>(), vec3(1, 0, 0));
-    pose.localTransforms[2] = rotate(mat4(), pi<float>(), vec3(1, 0, 0));
+    pose.localTransforms[0] = translate(mat4(1.0f), vec3(1));
+    pose.localTransforms[1] = rotate(mat4(1.0f), pi<float>(), vec3(1, 0, 0));
+    pose.localTransforms[2] = rotate(mat4(1.0f), pi<float>(), vec3(1, 0, 0));
 
     pose.ComputeObjectFromLocal(skeleton);
 
     ASSERT_EQ(pose.objectTransforms.size(), 3);
-    EXPECT_MAT4_NEAR(pose.objectTransforms[2], translate(mat4(), vec3(1)), 0.00001f);
+    EXPECT_MAT4_NEAR(pose.objectTransforms[2], translate(mat4(1.0f), vec3(1)), 0.00001f);
 }
 
 TEST(PoseTests, ComputeObjectFromLocal_SingleChain2)
@@ -78,9 +78,9 @@ TEST(PoseTests, ComputeObjectFromLocal_SingleChain2)
 
     Pose pose;
     pose.localTransforms.resize(3);
-    pose.localTransforms[0] = translate(mat4(), vec3(1, 0, 0));
-    pose.localTransforms[1] = scale(mat4(), vec3(2));
-    pose.localTransforms[2] = translate(mat4(), vec3(0, 1, 0));
+    pose.localTransforms[0] = translate(mat4(1.0f), vec3(1, 0, 0));
+    pose.localTransforms[1] = scale(mat4(1.0f), vec3(2));
+    pose.localTransforms[2] = translate(mat4(1.0f), vec3(0, 1, 0));
 
     pose.ComputeObjectFromLocal(skeleton);
 

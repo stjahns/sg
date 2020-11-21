@@ -14,7 +14,7 @@ BipedDemo::BipedDemo(Window& window, Camera& camera)
     : shaderProgram("shaders/skinned.vs.glsl", "shaders/mixamo.fs.glsl")
     , camera(camera)
     , drawWireframe(false)
-    , drawSkeleton(false)
+    , drawSkeleton(false) // fixme
     , renderer(window)
 {
     LoadBiped();
@@ -78,11 +78,11 @@ void BipedDemo::LoadBiped()
         skinUniformIds.push_back(id.str());
     }
 
-    LoadClipFromFile("Clips/armada.fbx", skeleton, 0, "mixamorig_");
-    LoadClipFromFile("Clips/armada to esquiva.fbx", skeleton, 0, "mixamorig_");
-    LoadClipFromFile("Clips/ginga sideways to au.fbx", skeleton, 0, "mixamorig_");
-    LoadClipFromFile("Clips/au.fbx", skeleton, 0, "mixamorig_");
-    LoadClipFromFile("Clips/au to role.fbx", skeleton, 0, "mixamorig_");
+    LoadClipFromFile("Clips/armada.fbx", skeleton, 0, "mixamorig:");
+    LoadClipFromFile("Clips/armada to esquiva.fbx", skeleton, 0, "mixamorig:");
+    LoadClipFromFile("Clips/ginga sideways to au.fbx", skeleton, 0, "mixamorig:");
+    LoadClipFromFile("Clips/au.fbx", skeleton, 0, "mixamorig:");
+    LoadClipFromFile("Clips/au to role.fbx", skeleton, 0, "mixamorig:");
 
     float spacing = 100.0f;
 
@@ -262,7 +262,7 @@ void BipedDemo::Render()
 
 void BipedDemo::AddWidgets()
 {
-    if (ImGui::CollapsingHeader("Render", "RENDER", true, true))
+    if (ImGui::CollapsingHeader("Render"))
     {
         ImGui::Checkbox("Wireframe", &drawWireframe);
         ImGui::Checkbox("Skeleton", &drawSkeleton);

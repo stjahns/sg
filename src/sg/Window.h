@@ -35,6 +35,7 @@ public:
     bool ShouldClose() { return glfwWindowShouldClose(window); }
 
     void Update();
+    void RenderImGui();
 
     void SwapBuffers()
     {

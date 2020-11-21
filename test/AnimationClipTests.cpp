@@ -51,7 +51,7 @@ TEST(LoadClip, LoadsDuration)
 
 	bool result = LoadClip(*scene, skeleton, clip);
 
-	EXPECT_EQ(clip.duration, scene->mAnimations[0]->mDuration);
+	EXPECT_FLOAT_EQ(clip.duration, scene->mAnimations[0]->mDuration / 1000.0f);
 }
 
 TEST(LoadClip, LoadsPositionChannel)
@@ -69,7 +69,7 @@ TEST(LoadClip, LoadsPositionChannel)
 
 	bool result = LoadClip(*scene, skeleton, clip);
 
-	EXPECT_EQ(clip.translationChannels.size(), 1);
+	ASSERT_EQ(clip.translationChannels.size(), 1);
 	EXPECT_TRUE(clip.translationChannels[0].GetTarget().IsValid());
 }
 
@@ -88,7 +88,7 @@ TEST(LoadClip, LoadsRotationChannel)
 
 	bool result = LoadClip(*scene, skeleton, clip);
 
-	EXPECT_EQ(clip.rotationChannels.size(), 1);
+	ASSERT_EQ(clip.rotationChannels.size(), 1);
 	EXPECT_TRUE(clip.rotationChannels[0].GetTarget().IsValid());
 }
 

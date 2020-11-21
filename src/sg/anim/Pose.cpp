@@ -14,7 +14,7 @@ void Pose::ComputeObjectFromLocal(const Skeleton& skeleton)
 {
     objectTransforms.resize(localTransforms.size());
 
-    mat4 identity;
+    mat4 identity(1.0f);
 
     for (int boneIndex = 0; boneIndex < skeleton.bones.size(); ++boneIndex)
     {

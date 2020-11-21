@@ -100,7 +100,7 @@ TEST(RotationChannelTests, NoKeys_DefaultValue)
 
 	quat q = channel.Evaluate(1.0f);
 
-	EXPECT_QUAT_EQ(q, quat());
+	EXPECT_QUAT_EQ(q, quat(1.0f, 0.0f, 0.0f, 0.0f));
 }
 
 TEST(RotationChannelTests, OneKey)

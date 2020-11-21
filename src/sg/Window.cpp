@@ -1,7 +1,8 @@
 #include "Window.h"
 
 #include <imgui.h>
-#include "imgui_impl_glfw_glad.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 Window::Window(int width, int height)
 {
@@ -23,7 +24,9 @@ Window::Window(int width, int height)
 
         instance = this;
 
-        ImGui_ImplGlfwGlad_Init(window, true);
+        ImGui::CreateContext();
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init();
 
         glfwSetMouseButtonCallback(window, MouseButtonCallback);
         glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
@@ -32,14 +35,24 @@ Window::Window(int width, int height)
 
 Window::~Window()
 {
-    ImGui_ImplGlfwGlad_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
 }
 
 void Window::Update()
 {
     glfwPollEvents();
-    ImGui_ImplGlfwGlad_NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+}
+
+void Window::RenderImGui()
+{
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Window::OnMouseButtonAction(int button, int action, int mods)

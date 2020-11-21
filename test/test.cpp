@@ -19,7 +19,7 @@ TEST(ConvertToMat4, Identity)
 {
 	aiMatrix4x4 in;
 	mat4 out = ConvertToMat4(in);
-	EXPECT_MAT4_EQ(out, mat4());
+	EXPECT_MAT4_EQ(out, mat4(1.0f));
 }
 
 TEST(ConvertToMat4, RotationZ)
@@ -28,7 +28,7 @@ TEST(ConvertToMat4, RotationZ)
 	in.FromEulerAnglesXYZ(0, 0, 3);
 	mat4 out = ConvertToMat4(in);
 
-	mat4 expected = glm::rotate(mat4(), 3.0f, vec3(0.0f, 0.0f, 1.0f));
+	mat4 expected = glm::rotate(mat4(1.0f), 3.0f, vec3(0.0f, 0.0f, 1.0f));
 
 	EXPECT_MAT4_EQ(out, expected);
 }
@@ -39,7 +39,7 @@ TEST(ConvertToMat4, RotationX)
 	in.FromEulerAnglesXYZ(1, 0, 0);
 	mat4 out = ConvertToMat4(in);
 
-	mat4 expected = glm::rotate(mat4(), 1.0f, vec3(1.0f, 0.0f, 0.0f));
+	mat4 expected = glm::rotate(mat4(1.0f), 1.0f, vec3(1.0f, 0.0f, 0.0f));
 
 	EXPECT_MAT4_EQ(out, expected);
 }
@@ -51,7 +51,7 @@ TEST(ConvertToMat4, Translation)
 
 	mat4 out = ConvertToMat4(in);
 
-	mat4 expected = glm::translate(mat4(), vec3(1.0f, 2.0f, 3.0f));
+	mat4 expected = glm::translate(mat4(1.0f), vec3(1.0f, 2.0f, 3.0f));
 
 	EXPECT_MAT4_EQ(out, expected);
 }
@@ -182,8 +182,8 @@ TEST(LoadSkeleton_Simple, SetsInverseBindPoses)
 	Skeleton skeleton;
 	bool result = LoadSkeleton(scene, skeleton);
 
-	mat4 expectedParent = glm::rotate(mat4(), 1.0f, vec3(1.0f, 0.0f, 0.0f));
-	mat4 expectedChild = glm::rotate(mat4(), 1.0f, vec3(0.0f, 1.0f, 0.0f));
+	mat4 expectedParent = glm::rotate(mat4(1.0f), 1.0f, vec3(1.0f, 0.0f, 0.0f));
+	mat4 expectedChild = glm::rotate(mat4(1.0f), 1.0f, vec3(0.0f, 1.0f, 0.0f));
 
 	ASSERT_EQ(skeleton.bones.size(), 2);
 	EXPECT_MAT4_EQ(skeleton.bones[0].inverseBindPose, expectedParent);
@@ -198,8 +198,8 @@ TEST(LoadSkeleton_Simple, SetsBindPose)
 	Skeleton skeleton;
 	bool result = LoadSkeleton(scene, skeleton);
 
-	mat4 expectedParent = glm::translate(mat4(), vec3(1.0f, 2.0f, 3.0f));
-	mat4 expectedChild = glm::translate(mat4(), vec3(4.0f, 5.0f, 6.0f));
+	mat4 expectedParent = glm::translate(mat4(1.0f), vec3(1.0f, 2.0f, 3.0f));
+	mat4 expectedChild = glm::translate(mat4(1.0f), vec3(4.0f, 5.0f, 6.0f));
 
 	ASSERT_EQ(skeleton.bindPose.localTransforms.size(), 2);
 	EXPECT_MAT4_EQ(skeleton.bindPose.localTransforms[0], expectedParent);

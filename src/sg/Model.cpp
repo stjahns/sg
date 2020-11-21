@@ -19,6 +19,7 @@
 Model::Model(const char* filename)
 	: m_loaded(false)
 	, m_bound(false)
+	, transform(1.0f)
 {
 	m_filename = filename;
 	m_filename = GetAssetPath(filename);

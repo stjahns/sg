@@ -17,6 +17,8 @@ public:
 		, m_MouseStartX(0.0)
 		, m_MouseStartY(0.0)
 		, m_Position(0.0f, 0.0f, 20.0f)
+		, m_EulerRotation(0.0f, 0.0f, 0.0f)
+		, m_RotationStart(0.0f, 0.0f, 0.0f)
 		, fCameraSpeed(10.0f)
 		, fCameraRotateSpeed(1.0f)
 	{

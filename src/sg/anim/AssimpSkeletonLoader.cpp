@@ -38,7 +38,18 @@ mat4 ConvertToMat4(aiMatrix4x4 in)
 bool LoadSkeleton(const aiScene& scene, Skeleton& skeleton)
 {
 	const aiNode& root = *scene.mRootNode;
+
+	if (!scene.HasMeshes())
+	{
+		return false;
+	}
+
 	const aiMesh& mesh = *scene.mMeshes[0]; // TODO -- handle multiple meshes
+
+	if (!mesh.HasBones())
+	{
+		return false;
+	}
 
 	for (int i = 0; i < mesh.mNumBones; ++i)
 	{
@@ -70,6 +81,7 @@ bool LoadSkeleton(const aiScene& scene, Skeleton& skeleton)
 	skeleton.bindPose.ComputeObjectFromLocal(skeleton);
 
 	// TODO -- should keep walking parents until reaching scene root, but this works fine for the mixamo rig
+	// (relies on root's parent transform having no translation/scaling/rotation relative to scene origin)
     const aiBone& rootBone = *mesh.mBones[0];
     const aiNode* rootNode = root.FindNode(rootBone.mName);
     mat4 rootParent = ConvertToMat4(rootNode->mParent->mTransformation);

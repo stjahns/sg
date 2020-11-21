@@ -29,8 +29,8 @@ void DemoProgram::Run()
         Render();
 
         AddWidgets();
-        ImGui::Render();
 
+        window.RenderImGui();
         window.SwapBuffers();
     }
 }
